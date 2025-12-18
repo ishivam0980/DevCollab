@@ -1,0 +1,173 @@
+'use server';
+
+import getCurrentUser from '@/lib/utils';
+import connectDB from '@/lib/mongodb';
+import User from '@/models/User';
+
+// return types
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  image?: string;//it means that image can be optional(undefined) or of type string 
+  bio: string;
+  location: string;
+  skills: string[];
+  experienceLevel: string;
+  githubUrl: string;
+  linkedinUrl: string;
+  leetcodeUrl: string;
+  codechefUrl: string;
+  codeforcesUrl: string;
+  createdAt:Date
+}
+
+
+/*
+  If we define the type simply as:
+  type GetProfileResponse = { success: true; user: UserProfile } | { success: false; error: string };
+  
+  TypeScript cannot guarantee that 'user' exists just because 'success' is true in the else block.
+  It worries: "What if an object comes back with { success: false, error: '...' }? usage of .user would crash."
+  
+  SOLUTIONS:
+  Option 1 (Frontend Check): 
+  Keep the simple type, but in page.tsx you must write:
+  if (!result.user) return; // Manually prove to TypeScript that user exists.
+
+  Option 2 (Strict Discriminated Union):
+  We use 'error?: never' and 'user?: never' to make the states mutually exclusive.
+  This tells TypeScript: "If success is true, error is IMPOSSIBLE. If success is false, user is IMPOSSIBLE."
+*/
+
+export type GetProfileResponse = 
+  | { success: true; user: UserProfile; error?: never }  // Success Case
+  | { success: false; error: string; user?: never };     // Failure Case
+
+
+export type ActionResponse = {
+  success?: boolean;
+  error?: string;
+};
+
+// ============================================
+// 1. GET PROFILE - Fetch current user's data
+// ============================================
+export async function getProfile(): Promise<GetProfileResponse> {
+  try {
+    // Step 1: Check if user is logged in
+    const currentUser = await getCurrentUser();
+    if (!currentUser?.email) {
+      return { success:false ,error: 'Unauthorized' };
+    }
+    
+    // Step 2: Connect to MongoDB
+    await connectDB();
+    
+    // Step 3: Find user by their email
+    const user = await User.findOne({ email: currentUser.email });
+    if (!user) {
+      return { success:false ,error: 'User not found' };
+    }
+    
+    // Step 4: Return user data (remove password for security)
+    return { 
+      success:true,
+      user: {
+        id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        image: user.image,
+        bio: user.bio || '',
+        location: user.location || '',
+        skills: user.skills || [],
+        experienceLevel: user.experienceLevel || 'Beginner',
+        githubUrl: user.githubUrl || '',
+        linkedinUrl: user.linkedinUrl || '',
+        leetcodeUrl: user.leetcodeUrl || '',
+        codechefUrl: user.codechefUrl || '',
+        codeforcesUrl: user.codeforcesUrl || '',
+        createdAt:user.createdAt
+      }
+    };
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    return { success:false ,error: 'Failed to fetch profile' };
+  }
+}
+
+// ============================================
+// 2. UPDATE PROFILE - Save profile changes
+// ============================================
+export async function updateProfile(formData: FormData): Promise<ActionResponse> {
+  try {
+    // Step 1: Check if user is logged in
+    const currentUser = await getCurrentUser();
+    if (!currentUser?.email) {
+      return { error: 'Unauthorized' };
+    }
+    
+    // Step 2: Extract data from the form
+    const name = formData.get('name') as string;
+    const bio = formData.get('bio') as string;
+    const location = formData.get('location') as string;
+    const experienceLevel = formData.get('experienceLevel') as string;
+    const githubUrl = formData.get('githubUrl') as string;
+    const linkedinUrl = formData.get('linkedinUrl') as string;
+    
+    // Skills come as comma-separated string, convert to array
+    const skillsString = formData.get('skills') as string;
+    const skills = skillsString ? skillsString.split(',').map(s => s.trim()) : [];
+    
+    // Step 3: Validate required fields
+    if (!name || name.trim().length === 0) {
+      return { error: 'Name is required' };
+    }
+    
+    // Step 4: Connect to database
+    await connectDB();
+    
+    // Step 5: Update user document
+    await User.findOneAndUpdate(
+      { email: currentUser.email },  // Find by email
+      {
+        name: name.trim(),
+        bio: bio?.trim() || '',
+        location: location?.trim() || '',
+        skills,
+        experienceLevel: experienceLevel || 'Beginner',
+        githubUrl: githubUrl?.trim() || '',
+        linkedinUrl: linkedinUrl?.trim() || '',
+      }
+    );
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    return { error: 'Failed to update profile' };
+  }
+}
+
+// ============================================
+// 3. DELETE PROFILE - Delete user account
+// ============================================
+export async function deleteProfile(): Promise<ActionResponse> {
+  try {
+    // Step 1: Check if user is logged in
+    const currentUser = await getCurrentUser();
+    if (!currentUser?.email) {
+      return { error: 'Unauthorized' };
+    }
+    
+    // Step 2: Connect to database
+    await connectDB();
+    
+    // Step 3: Delete the user
+    await User.findOneAndDelete({ email: currentUser.email });
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting profile:', error);
+    return { error: 'Failed to delete account' };
+  }
+}
