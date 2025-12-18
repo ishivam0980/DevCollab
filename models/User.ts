@@ -21,7 +21,11 @@ const UserSchema = new Schema({
   linkedinUrl: String,     
   leetcodeUrl:String,
   codechefUrl:String,
-  codeforcesUrl:String,      
+  codeforcesUrl:String,
+
+  // Password reset fields
+  resetToken: String,
+  resetTokenExpiry: Date,
 
   createdAt: { type: Date, default: Date.now },
 });

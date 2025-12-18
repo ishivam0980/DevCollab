@@ -113,16 +113,7 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
             className="text-center lg:text-left"
           >
-            {/* Badge */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-4 py-1.5 rounded-full text-purple-300 text-sm mb-6"
-            >
-              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              Join 500+ Active Developers
-            </motion.div>
+            
 
             {/* Main Heading */}
             <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight">
