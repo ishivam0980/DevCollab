@@ -1,12 +1,33 @@
-import { getServerSession } from 'next-auth';
-import { redirect } from 'next/navigation';
-import { authOptions } from '@/lib/auth';
+'use client';
+import { useSession, signOut } from 'next-auth/react';
+import { useRouter, usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
-export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
-  const session = await getServerSession(authOptions);
-  if (!session) redirect('/sign-in');
+export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      // Use replace to prevent back button loop, include callbackUrl for redirect after login
+      router.replace(`/sign-in?callbackUrl=${encodeURIComponent(pathname)}`);
+    }
+  }, [status, router, pathname]);
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
   
   return (
     <div className="min-h-screen bg-gray-100">
@@ -44,12 +65,12 @@ export default async function ProtectedLayout({ children }: { children: React.Re
               </div>
               <span className="font-medium">{session.user.name || 'Profile'}</span>
             </Link>
-            <Link 
-              href="/api/auth/signout" 
-              className="text-gray-500 hover:text-red-600 font-medium transition-colors"
+            <button 
+              onClick={() => signOut({ callbackUrl: '/sign-in' })}
+              className="text-gray-500 hover:text-red-600 font-medium transition-colors cursor-pointer"
             >
               Sign Out
-            </Link>
+            </button>
           </div>
         </div>
       </nav>
