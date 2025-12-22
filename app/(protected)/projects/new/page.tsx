@@ -1,7 +1,13 @@
-const page = () => {
+'use client'
+
+
+
+const NewProjectPage = () => {
   return (
-    <div>New Project</div>
+    <div>
+      
+    </div>
   )
 }
 
-export default page
+export default NewProjectPage

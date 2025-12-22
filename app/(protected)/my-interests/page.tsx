@@ -1,7 +1,12 @@
-const page = () => {
+'use client'
+
+
+const MyInterestsPage = () => {
   return (
-    <div>My Interests</div>
+    <div>
+      
+    </div>
   )
 }
 
-export default page
+export default MyInterestsPage

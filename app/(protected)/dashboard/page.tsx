@@ -1,7 +1,14 @@
-const page = () => {
+'use client'
+
+
+const DashboardPage = () => {
+
+
   return (
-    <div>page</div>
+   <div>
+    
+   </div>
   )
 }
 
-export default page
+export default DashboardPage

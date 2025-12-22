@@ -1,8 +1,14 @@
+'use client'
 
-const page = () => {
+
+const BrowsePage = () => {
+
+
   return (
-    <div>Browse</div>
+   <div>
+    
+   </div>
   )
 }
 
-export default page
+export default BrowsePage

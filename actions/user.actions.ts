@@ -114,6 +114,9 @@ export async function updateProfile(formData: FormData): Promise<ActionResponse>
     const experienceLevel = formData.get('experienceLevel') as string;
     const githubUrl = formData.get('githubUrl') as string;
     const linkedinUrl = formData.get('linkedinUrl') as string;
+    const leetcodeUrl = formData.get('leetcodeUrl') as string;
+    const codechefUrl = formData.get('codechefUrl') as string;
+    const codeforcesUrl = formData.get('codeforcesUrl') as string;
     
     // Skills come as comma-separated string, convert to array
     const skillsString = formData.get('skills') as string;
@@ -138,6 +141,9 @@ export async function updateProfile(formData: FormData): Promise<ActionResponse>
         experienceLevel: experienceLevel || 'Beginner',
         githubUrl: githubUrl?.trim() || '',
         linkedinUrl: linkedinUrl?.trim() || '',
+        leetcodeUrl: leetcodeUrl?.trim() || '',
+        codechefUrl: codechefUrl?.trim() || '',
+        codeforcesUrl: codeforcesUrl?.trim() || '',
       }
     );
     
