@@ -144,6 +144,7 @@ export async function updateProfile(formData: FormData): Promise<ActionResponse>
         leetcodeUrl: leetcodeUrl?.trim() || '',
         codechefUrl: codechefUrl?.trim() || '',
         codeforcesUrl: codeforcesUrl?.trim() || '',
+        image: (formData.get('image') as string) || undefined, // Allow updating image
       }
     );
     

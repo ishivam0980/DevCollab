@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { getProfile, updateProfile } from "@/actions/user.actions"
 import { TECH_SKILLS } from "@/lib/constants"
 import { motion } from "framer-motion"
+import { UploadButton } from "@/lib/uploadthing"
 import Link from "next/link"
 
 interface ProfileData {
@@ -50,46 +51,75 @@ const ProfilePage = () => {
   const [showSkillSelector, setShowSkillSelector] = useState(false)
   const skillSelectRef = useRef<HTMLSelectElement>(null)
 
-  useEffect(() => {
-    const fetchProfileDetails = async () => {
-      setLoading(true);
-      try {
-        const result = await getProfile();
-        
-        if(!result.success){
-          console.log(result.error);
-          setLoadingError(true)
-        }
-        else{
-          if(!result.user) return;
-          
-          const fetchedData: ProfileData = {
-            name: result.user.name,
-            email: result.user.email,
-            bio: result.user.bio || '',
-            location: result.user.location || '',
-            skills: result.user.skills || [],
-            experienceLevel: result.user.experienceLevel || 'Beginner',
-            githubUrl: result.user.githubUrl || '',
-            linkedinUrl: result.user.linkedinUrl || '',
-            leetcodeUrl: result.user.leetcodeUrl || '',
-            codechefUrl: result.user.codechefUrl || '',
-            codeforcesUrl: result.user.codeforcesUrl || '',
-            image: result.user.image || '',
-            date: new Date(result.user.createdAt).toLocaleDateString('en-US', {
-              year: 'numeric', month: 'long', day: 'numeric'
-            })
-          }
-          
-          setData(fetchedData)
-        }
-      } catch (error) {
-        setUnexpectedError(true);
-      } finally {
-        setLoading(false);
+  const fetchProfileDetails = async () => {
+    setLoading(true);
+    try {
+      const result = await getProfile();
+      
+      if(!result.success){
+        console.log(result.error);
+        setLoadingError(true)
       }
+      else{
+        if(!result.user) return;
+        
+        const fetchedData: ProfileData = {
+          name: result.user.name,
+          email: result.user.email,
+          bio: result.user.bio || '',
+          location: result.user.location || '',
+          skills: result.user.skills || [],
+          experienceLevel: result.user.experienceLevel || 'Beginner',
+          githubUrl: result.user.githubUrl || '',
+          linkedinUrl: result.user.linkedinUrl || '',
+          leetcodeUrl: result.user.leetcodeUrl || '',
+          codechefUrl: result.user.codechefUrl || '',
+          codeforcesUrl: result.user.codeforcesUrl || '',
+          image: result.user.image || '',
+          date: new Date(result.user.createdAt).toLocaleDateString('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric'
+          })
+        }
+        
+        setData(fetchedData)
+      }
+    } catch (error) {
+      setUnexpectedError(true);
+    } finally {
+      setLoading(false);
     }
-    
+  }
+
+  // Refresh profile without showing loading spinner (for image updates)
+  const refreshProfile = async () => {
+    try {
+      const result = await getProfile();
+      if(result.success && result.user) {
+        const fetchedData: ProfileData = {
+          name: result.user.name,
+          email: result.user.email,
+          bio: result.user.bio || '',
+          location: result.user.location || '',
+          skills: result.user.skills || [],
+          experienceLevel: result.user.experienceLevel || 'Beginner',
+          githubUrl: result.user.githubUrl || '',
+          linkedinUrl: result.user.linkedinUrl || '',
+          leetcodeUrl: result.user.leetcodeUrl || '',
+          codechefUrl: result.user.codechefUrl || '',
+          codeforcesUrl: result.user.codeforcesUrl || '',
+          image: result.user.image || '',
+          date: new Date(result.user.createdAt).toLocaleDateString('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric'
+          })
+        }
+        setData(fetchedData)
+      }
+    } catch (error) {
+      console.error("Failed to refresh profile:", error);
+    }
+  }
+
+  useEffect(() => {
     fetchProfileDetails();
   }, [])
 
@@ -119,6 +149,7 @@ const ProfilePage = () => {
     formData.append('leetcodeUrl', data.leetcodeUrl)
     formData.append('codechefUrl', data.codechefUrl)
     formData.append('codeforcesUrl', data.codeforcesUrl)
+    if(data.image) formData.append('image', data.image)
 
     const result = await updateProfile(formData)
     
@@ -209,24 +240,48 @@ const ProfilePage = () => {
         <div className="glass-card rounded-2xl p-6 md:sticky md:top-24">
           
           {/* Profile Picture */}
-          <div className="flex justify-center mb-6">
-            <div className="relative group">
+          <div className="flex flex-col items-center mb-6">
+            <div className="relative group w-32 h-32">
               <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-              <div className="relative p-1 bg-black rounded-full">
+              <div className="relative w-full h-full rounded-full overflow-hidden bg-black border-2 border-black">
                 <img 
                   src={data.image || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(data.name)}`} 
                   alt="Profile" 
-                  className="w-32 h-32 rounded-full object-cover bg-slate-900"
+                  className="w-full h-full object-cover"
                 />
+                
+                {isEditing && (
+                  <>
+                    <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center transition-opacity pointer-events-none">
+                      <svg className="w-8 h-8 text-white mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span className="text-xs text-white font-medium">Change</span>
+                    </div>
+                    {/* Invisible Upload Trigger covering the whole circle */}
+                    <div className="absolute inset-0 z-50 opacity-0 cursor-pointer">
+                      <UploadButton
+                        endpoint="profileImage"
+                        onClientUploadComplete={(res) => {
+                          if (res && res[0]) {
+                            // Update local state ONLY (Preview Mode)
+                            setData(prev => ({ ...prev, image: res[0].url }));
+                          }
+                        }}
+                        onUploadError={(error) => {
+                          alert(`Upload failed: ${error.message}`);
+                        }}
+                        appearance={{
+                          container: "w-full h-full",
+                          button: "w-full h-full cursor-pointer",
+                          allowedContent: "hidden"
+                        }}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
-              {isEditing && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer backdrop-blur-sm">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </div>
-              )}
             </div>
           </div>
 
