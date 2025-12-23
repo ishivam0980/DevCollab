@@ -3,6 +3,7 @@
 import getCurrentUser from '@/lib/utils';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
+import { UTApi } from "uploadthing/server";
 
 // return types
 export interface UserProfile {
@@ -130,6 +131,10 @@ export async function updateProfile(formData: FormData): Promise<ActionResponse>
     // Step 4: Connect to database
     await connectDB();
     
+    // Fetch OLD user to get previous image (for cleanup)
+    const oldUser = await User.findOne({ email: currentUser.email });
+    const oldImage = oldUser?.image;
+
     // Step 5: Update user document
     await User.findOneAndUpdate(
       { email: currentUser.email },  // Find by email
@@ -147,6 +152,24 @@ export async function updateProfile(formData: FormData): Promise<ActionResponse>
         image: (formData.get('image') as string) || undefined, // Allow updating image
       }
     );
+
+    // Step 6: Delete old image from UploadThing if replaced
+    const newImage = formData.get('image') as string;
+    if (newImage && oldImage && newImage !== oldImage) {
+      // Basic check to ensure we only try delete UploadThing images
+      if (oldImage.includes("utfs.io")) {
+        const key = oldImage.split("/").pop();
+        if (key) {
+          try {
+            const utapi = new UTApi();
+            await utapi.deleteFiles(key);
+            console.log("Deleted old profile image:", key);
+          } catch (error) {
+            console.error("Failed to delete old image:", error);
+          }
+        }
+      }
+    }
     
     return { success: true };
   } catch (error) {

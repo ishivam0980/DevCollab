@@ -113,11 +113,19 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
                   className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-white/5 transition-colors cursor-pointer border border-transparent hover:border-white/10"
                   title="My Profile"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-purple-500/20">
-                    <span className="text-white font-semibold text-sm">
-                      {session.user.name?.charAt(0).toUpperCase() || session.user.email?.charAt(0).toUpperCase() || 'U'}
-                    </span>
-                  </div>
+                  {session.user.image ? (
+                    <img 
+                      src={session.user.image} 
+                      alt="Profile" 
+                      className="w-8 h-8 rounded-lg object-cover bg-slate-800 shadow-lg shadow-purple-500/20" 
+                    />
+                  ) : (
+                    <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-purple-500/20">
+                      <span className="text-white font-semibold text-sm">
+                        {session.user.name?.charAt(0).toUpperCase() || session.user.email?.charAt(0).toUpperCase() || 'U'}
+                      </span>
+                    </div>
+                  )}
                 </Link>
 
                 {/* Sign Out Button */}

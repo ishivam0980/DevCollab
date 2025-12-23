@@ -6,6 +6,7 @@ import { TECH_SKILLS } from "@/lib/constants"
 import { motion } from "framer-motion"
 import { UploadButton } from "@/lib/uploadthing"
 import Link from "next/link"
+import { useSession } from "next-auth/react"
 
 interface ProfileData {
   name: string;
@@ -24,6 +25,7 @@ interface ProfileData {
 }
 
 const ProfilePage = () => { 
+  const { data: session, update } = useSession()
   const [loading, setLoading] = useState<boolean>(true)
   const [hasErrorLoading, setLoadingError] = useState<boolean>(false)
   const [hasUnexpectedError, setUnexpectedError] = useState<boolean>(false)
@@ -154,6 +156,13 @@ const ProfilePage = () => {
     const result = await updateProfile(formData)
     
     if (result.success) {
+      await update({ 
+        ...session, 
+        user: { 
+          ...session?.user, 
+          image: data.image 
+        } 
+      })
       setIsEditing(false)
     } else {
       alert("Failed to save profile")
