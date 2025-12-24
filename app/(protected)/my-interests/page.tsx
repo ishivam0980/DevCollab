@@ -193,72 +193,79 @@ const MyInterestsPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.1 }}
-              className="glass-card rounded-xl p-5 hover:border-purple-500/30 transition-all duration-300 h-full flex flex-col"
+              className="glass-card rounded-xl overflow-hidden hover:border-purple-500/30 hover:shadow-xl hover:shadow-purple-500/5 transition-all duration-300 hover:-translate-y-1 h-full flex flex-col group"
             >
-              {/* Header */}
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="text-lg font-semibold text-white line-clamp-1">{project.title}</h3>
-                <span className={`px-2 py-0.5 text-xs rounded-full border whitespace-nowrap ${getStatusBadge(project.status)}`}>
-                  {project.status === 'Looking for collaborators' ? 'Open' : project.status}
-                </span>
-              </div>
-
-              {/* Description */}
-              <p className="text-slate-400 text-sm line-clamp-2 mb-4">
-                {project.shortDescription || project.description.slice(0, 100)}
-              </p>
-
-              {/* Tech Stack */}
-              <div className="flex flex-wrap gap-1.5 mb-4">
-                {project.techStack.slice(0, 3).map(tech => (
-                  <span key={tech} className="px-2 py-0.5 text-xs bg-slate-800 text-slate-300 rounded-md">
-                    {tech}
+              {/* Gradient Header Bar */}
+              <div className="h-1.5 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500"></div>
+              
+              <div className="p-5 flex flex-col flex-1">
+                {/* Header */}
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="text-lg font-semibold text-white line-clamp-1 group-hover:text-purple-200 transition-colors">{project.title}</h3>
+                  <span className={`px-2.5 py-1 text-xs rounded-full border whitespace-nowrap font-medium ${getStatusBadge(project.status)}`}>
+                    {project.status === 'Looking for collaborators' ? 'Open' : project.status}
                   </span>
-                ))}
-                {project.techStack.length > 3 && (
-                  <span className="px-2 py-0.5 text-xs bg-slate-800 text-slate-400 rounded-md">
-                    +{project.techStack.length - 3}
-                  </span>
-                )}
-              </div>
+                </div>
 
-              {/* Owner */}
-              <div className="flex items-center gap-2 mb-4">
-                <img 
-                  src={project.owner?.image || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(project.owner?.name || 'User')}`}
-                  alt={project.owner?.name}
-                  className="w-6 h-6 rounded-full"
-                />
-                <span className="text-sm text-slate-400">{project.owner?.name}</span>
-              </div>
+                {/* Description */}
+                <p className="text-slate-400 text-sm line-clamp-2 mb-4">
+                  {project.shortDescription || project.description.slice(0, 100)}
+                </p>
 
-              {/* Footer */}
-              <div className="mt-auto pt-4 border-t border-slate-700/50 flex items-center justify-between">
-                <span className={`px-2 py-0.5 text-xs rounded-full border ${getExpBadge(project.experienceLevel)}`}>
-                  {project.experienceLevel}
-                </span>
-                <span className="text-xs text-slate-500">{formatDate(project.createdAt)}</span>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-2 mt-4">
-                <Link 
-                  href={`/projects/${project._id}`}
-                  className="flex-1 py-2 text-center text-sm bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-colors"
-                >
-                  View Project
-                </Link>
-                <button 
-                  onClick={() => handleWithdraw(project._id)}
-                  disabled={withdrawingId === project._id}
-                  className="flex-1 py-2 text-center text-sm bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg hover:bg-red-500/20 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
-                >
-                  {withdrawingId === project._id ? (
-                    <div className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin"></div>
-                  ) : (
-                    'Withdraw'
+                {/* Tech Stack */}
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  {project.techStack.slice(0, 3).map(tech => (
+                    <span key={tech} className="px-2 py-0.5 text-xs bg-slate-800/80 text-slate-300 rounded-md border border-white/5">
+                      {tech}
+                    </span>
+                  ))}
+                  {project.techStack.length > 3 && (
+                    <span className="px-2 py-0.5 text-xs bg-purple-500/10 text-purple-400 rounded-md border border-purple-500/20">
+                      +{project.techStack.length - 3}
+                    </span>
                   )}
-                </button>
+                </div>
+
+                {/* Owner */}
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="p-0.5 rounded-full bg-gradient-to-br from-purple-500 to-blue-500">
+                    <img 
+                      src={project.owner?.image || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(project.owner?.name || 'User')}`}
+                      alt={project.owner?.name}
+                      className="w-6 h-6 rounded-full border border-slate-900 object-cover"
+                    />
+                  </div>
+                  <span className="text-sm text-slate-400">{project.owner?.name}</span>
+                </div>
+
+                {/* Footer */}
+                <div className="mt-auto pt-4 border-t border-slate-700/50 flex items-center justify-between">
+                  <span className={`px-2.5 py-1 text-xs rounded-full border font-medium ${getExpBadge(project.experienceLevel)}`}>
+                    {project.experienceLevel}
+                  </span>
+                  <span className="text-xs text-slate-500">{formatDate(project.createdAt)}</span>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-2 mt-4">
+                  <Link 
+                    href={`/projects/${project._id}`}
+                    className="flex-1 py-2.5 text-center text-sm bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:opacity-90 transition-opacity font-medium shadow-lg shadow-purple-500/20"
+                  >
+                    View Project
+                  </Link>
+                  <button 
+                    onClick={() => handleWithdraw(project._id)}
+                    disabled={withdrawingId === project._id}
+                    className="flex-1 py-2.5 text-center text-sm bg-slate-800 text-slate-400 border border-slate-700 rounded-lg hover:border-red-500/50 hover:text-red-400 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+                  >
+                    {withdrawingId === project._id ? (
+                      <div className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin"></div>
+                    ) : (
+                      'Withdraw'
+                    )}
+                  </button>
+                </div>
               </div>
             </motion.div>
           ))}

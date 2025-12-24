@@ -176,7 +176,7 @@ const BrowsePage = () => {
         </div>
         <Link 
           href="/projects/new"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg font-medium text-white hover:opacity-90 transition-opacity"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg font-medium text-white hover:opacity-90 hover:scale-[1.02] hover:shadow-lg hover:shadow-purple-500/30 transition-all"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -198,18 +198,18 @@ const BrowsePage = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
+              className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:shadow-lg focus:shadow-purple-500/10 transition-all"
             />
           </div>
           <button 
             onClick={handleSearch}
-            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
+            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:opacity-90 hover:scale-[1.02] text-white rounded-xl font-medium transition-all shadow-lg shadow-purple-500/20 hover:shadow-xl hover:shadow-purple-500/30"
           >
             Search
           </button>
           <button 
             onClick={() => setShowFilters(!showFilters)}
-            className={`px-4 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 ${showFilters ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+            className={`px-4 py-3 rounded-xl font-medium transition-all flex items-center gap-2 ${showFilters ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-lg shadow-purple-500/10' : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-white/5'}`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -367,62 +367,74 @@ const BrowsePage = () => {
               transition={{ duration: 0.3, delay: index * 0.1 }}
             >
               <Link href={`/projects/${project._id}`}>
-                <div className="glass-card rounded-xl p-5 hover:border-purple-500/30 transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
-                  {/* Header with Match Badge */}
-                  <div className="flex items-start justify-between mb-3">
-                    <h3 className="text-lg font-semibold text-white line-clamp-1">{project.title}</h3>
-                    {project.matchScore !== null && (
-                      <span className={`px-2 py-0.5 text-xs rounded-full border ${getMatchBadge(project.matchScore)?.color}`}>
-                        {project.matchScore}%
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Description */}
-                  <p className="text-slate-400 text-sm line-clamp-2 mb-4">
-                    {project.shortDescription || project.description.slice(0, 120)}
-                  </p>
-
-                  {/* Tech Stack */}
-                  <div className="flex flex-wrap gap-1.5 mb-4">
-                    {project.techStack.slice(0, 4).map(tech => (
-                      <span key={tech} className="px-2 py-0.5 text-xs bg-slate-800 text-slate-300 rounded-md">
-                        {tech}
-                      </span>
-                    ))}
-                    {project.techStack.length > 4 && (
-                      <span className="px-2 py-0.5 text-xs bg-slate-800 text-slate-400 rounded-md">
-                        +{project.techStack.length - 4}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Experience Badge */}
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className={`px-2 py-0.5 text-xs rounded-full border ${getExpBadge(project.experienceLevel)}`}>
-                      {project.experienceLevel}
-                    </span>
-                    <span className="text-xs text-slate-500">{project.category}</span>
-                  </div>
-
-                  {/* Footer: Owner & Stats */}
-                  <div className="mt-auto pt-4 border-t border-slate-700/50 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <img 
-                        src={project.owner?.image || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(project.owner?.name || 'User')}`}
-                        alt={project.owner?.name}
-                        className="w-6 h-6 rounded-full"
-                      />
-                      <span className="text-sm text-slate-400">{project.owner?.name}</span>
+                <div className="glass-card rounded-xl overflow-hidden hover:border-purple-500/30 hover:shadow-xl hover:shadow-purple-500/5 transition-all duration-300 hover:-translate-y-1 h-full flex flex-col group">
+                  {/* Gradient Header Bar */}
+                  <div className="h-1.5 bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500"></div>
+                  
+                  <div className="p-5 flex flex-col flex-1">
+                    {/* Header with Match Badge */}
+                    <div className="flex items-start justify-between mb-3">
+                      <h3 className="text-lg font-semibold text-white line-clamp-1 group-hover:text-purple-200 transition-colors">{project.title}</h3>
+                      {project.matchScore !== null && (
+                        <div className={`flex items-center justify-center w-10 h-10 rounded-full text-xs font-bold border-2 shadow-lg ${
+                          project.matchScore >= 70 ? 'bg-green-500/20 border-green-500/50 text-green-400 shadow-green-500/20' :
+                          project.matchScore >= 40 ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400 shadow-yellow-500/20' :
+                          'bg-slate-700/50 border-slate-600 text-slate-300'
+                        }`}>
+                          {project.matchScore}%
+                        </div>
+                      )}
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-slate-500">
-                      <span className="flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
-                        {project.interestCount}
+
+                    {/* Description */}
+                    <p className="text-slate-400 text-sm line-clamp-2 mb-4">
+                      {project.shortDescription || project.description.slice(0, 120)}
+                    </p>
+
+                    {/* Tech Stack */}
+                    <div className="flex flex-wrap gap-1.5 mb-4">
+                      {project.techStack.slice(0, 4).map(tech => (
+                        <span key={tech} className="px-2 py-0.5 text-xs bg-slate-800/80 text-slate-300 rounded-md border border-white/5">
+                          {tech}
+                        </span>
+                      ))}
+                      {project.techStack.length > 4 && (
+                        <span className="px-2 py-0.5 text-xs bg-purple-500/10 text-purple-400 rounded-md border border-purple-500/20">
+                          +{project.techStack.length - 4}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Experience Badge */}
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className={`px-2.5 py-1 text-xs rounded-full border font-medium ${getExpBadge(project.experienceLevel)}`}>
+                        {project.experienceLevel}
                       </span>
-                      <span>{formatDate(project.createdAt)}</span>
+                      <span className="text-xs text-slate-500">{project.category}</span>
+                    </div>
+
+                    {/* Footer: Owner & Stats */}
+                    <div className="mt-auto pt-4 border-t border-slate-700/50 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {/* Avatar with gradient ring */}
+                        <div className="p-0.5 rounded-full bg-gradient-to-br from-purple-500 to-blue-500">
+                          <img 
+                            src={project.owner?.image || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(project.owner?.name || 'User')}`}
+                            alt={project.owner?.name}
+                            className="w-6 h-6 rounded-full border border-slate-900 object-cover"
+                          />
+                        </div>
+                        <span className="text-sm text-slate-400">{project.owner?.name}</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-slate-500">
+                        <span className="flex items-center gap-1">
+                          <svg className="w-4 h-4 text-pink-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                          </svg>
+                          {project.interestCount}
+                        </span>
+                        <span>{formatDate(project.createdAt)}</span>
+                      </div>
                     </div>
                   </div>
                 </div>

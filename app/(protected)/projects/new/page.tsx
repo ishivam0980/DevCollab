@@ -55,9 +55,11 @@ const NewProjectPage = () => {
       !formData.techStack.includes(tech)
     ); // No slice - show all matching techs
     
-    // Always add "Others" at the end if not already selected
+    // Show "Others" at the end if:
+    // 1. Not already selected
+    // 2. AND (empty search OR searching "others" OR no matches found)
     if (!formData.techStack.includes('Others') && 
-        ('others'.includes(techSearch.toLowerCase()) || techSearch === '')) {
+        (techSearch === '' || 'others'.includes(techSearch.toLowerCase()) || filtered.length === 0)) {
       filtered.push('Others');
     }
     return filtered;
@@ -233,9 +235,9 @@ const NewProjectPage = () => {
               <div className="min-h-[70px] flex flex-wrap gap-2 content-start">
                 {formData.techStack.length > 0 ? (
                   formData.techStack.map(tech => (
-                    <span key={tech} className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-500/20 text-purple-300 rounded-lg text-sm border border-purple-500/30">
+                    <span key={tech} className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-300 rounded-lg text-sm border border-purple-500/30 shadow-sm">
                       {tech}
-                      <button type="button" onClick={() => removeTech(tech)} className="hover:text-white transition-colors">
+                      <button type="button" onClick={() => removeTech(tech)} className="hover:text-white transition-colors hover:scale-110">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -243,7 +245,12 @@ const NewProjectPage = () => {
                     </span>
                   ))
                 ) : (
-                  <span className="text-slate-500">No technologies selected</span>
+                  <div className="flex items-center gap-2 text-slate-500">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    </svg>
+                    <span>Click above to add technologies</span>
+                  </div>
                 )}
               </div>
             </div>
@@ -294,14 +301,17 @@ const NewProjectPage = () => {
         </div>
 
         {/* Submit */}
-        <div className="flex items-center justify-end gap-4 mt-6">
-          <Link href="/my-projects" className="px-5 py-3 text-slate-400 hover:text-white transition-colors">
+        <div className="flex items-center justify-end gap-4 mt-6 pt-4 border-t border-slate-800">
+          <Link 
+            href="/my-projects" 
+            className="px-6 py-3 text-slate-400 hover:text-white transition-colors rounded-xl hover:bg-slate-800/50 border border-transparent hover:border-slate-700"
+          >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl font-semibold text-white hover:from-purple-500 hover:to-blue-500 transition-all disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-purple-500/25"
+            className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl font-semibold text-white hover:opacity-90 hover:scale-[1.02] transition-all disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30"
           >
             {isSubmitting ? (
               <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>Creating...</>

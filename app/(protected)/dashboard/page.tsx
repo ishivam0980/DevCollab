@@ -129,30 +129,33 @@ const DashboardPage = () => {
       className="space-y-8"
     >
       {/* Welcome Section with Profile Completion */}
-      <div className="glass-card rounded-2xl p-8 relative overflow-hidden">
+      <div className="glass-card rounded-2xl p-6 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-purple-600/10 to-blue-600/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
         <div className="relative">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                Welcome back, {session?.user?.name?.split(' ')[0] || 'Developer'}! 👋
+              <h1 className="text-2xl md:text-3xl font-bold mb-1">
+                <span className="bg-gradient-to-r from-white via-purple-200 to-white bg-clip-text text-transparent">
+                  Welcome back, {session?.user?.name?.split(' ')[0] || 'Developer'}!
+                </span>
+                <span className="ml-2">👋</span>
               </h1>
-              <p className="text-slate-400 text-lg">
+              <p className="text-slate-400">
                 Find your next collaboration or share your project ideas
               </p>
             </div>
             
-            {/* Profile Completion */}
-            <div className="md:min-w-[200px]">
+            {/* Profile Completion - Enhanced */}
+            <div className="md:min-w-[220px] glass-card rounded-xl p-4 border border-white/5">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-slate-400">Profile</span>
-                <span className={`text-sm font-medium ${profileCompletion >= 80 ? 'text-green-400' : profileCompletion >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>
+                <span className="text-sm font-medium text-white">Profile</span>
+                <span className={`text-lg font-bold ${profileCompletion >= 80 ? 'text-green-400' : profileCompletion >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>
                   {profileCompletion}%
                 </span>
               </div>
               <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
                 <div 
-                  className={`h-full rounded-full ${
+                  className={`h-full rounded-full transition-all duration-500 ${
                     profileCompletion >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 
                     profileCompletion >= 50 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 
                     'bg-gradient-to-r from-red-500 to-pink-500'
@@ -163,9 +166,12 @@ const DashboardPage = () => {
               {profileCompletion < 80 && (
                 <Link 
                   href="/profile" 
-                  className="text-xs text-purple-400 hover:text-purple-300 mt-2 inline-block"
+                  className="text-xs text-purple-400 hover:text-purple-300 mt-2 inline-flex items-center gap-1 group"
                 >
-                  Complete profile for better matches →
+                  Complete profile 
+                  <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </Link>
               )}
             </div>
@@ -173,94 +179,94 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Link href="/my-projects" className="glass-card rounded-xl p-6 hover:border-purple-500/30 transition-all duration-300 group">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-slate-400 text-sm mb-1">Projects Created</p>
-              <p className="text-3xl font-bold text-white">{stats.projectsCreated}</p>
-            </div>
-            <div className="w-14 h-14 bg-purple-500/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-              <svg className="w-7 h-7 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      {/* Quick Stats - Compact with left-aligned icons */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <Link href="/my-projects" className="glass-card rounded-xl p-4 hover:border-purple-500/30 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-300 group">
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-xl flex items-center justify-center border border-purple-500/20 group-hover:scale-110 transition-transform">
+              <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
               </svg>
+            </div>
+            <div>
+              <p className="text-slate-400 text-xs uppercase tracking-wider">Projects Created</p>
+              <p className="text-2xl font-bold text-white">{stats.projectsCreated}</p>
             </div>
           </div>
         </Link>
 
-        <div className="glass-card rounded-xl p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-slate-400 text-sm mb-1">Interests Received</p>
-              <p className="text-3xl font-bold text-white">{stats.totalInterestsReceived}</p>
-            </div>
-            <div className="w-14 h-14 bg-pink-500/10 rounded-xl flex items-center justify-center">
-              <svg className="w-7 h-7 text-pink-400" fill="currentColor" viewBox="0 0 24 24">
+        <div className="glass-card rounded-xl p-4">
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 bg-gradient-to-br from-pink-500/20 to-rose-600/20 rounded-xl flex items-center justify-center border border-pink-500/20">
+              <svg className="w-5 h-5 text-pink-400" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
+            </div>
+            <div>
+              <p className="text-slate-400 text-xs uppercase tracking-wider">Interests Received</p>
+              <p className="text-2xl font-bold text-white">{stats.totalInterestsReceived}</p>
             </div>
           </div>
         </div>
 
-        <Link href="/my-interests" className="glass-card rounded-xl p-6 hover:border-purple-500/30 transition-all duration-300 group">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-slate-400 text-sm mb-1">Projects Interested</p>
-              <p className="text-3xl font-bold text-white">{stats.projectsInterested}</p>
-            </div>
-            <div className="w-14 h-14 bg-blue-500/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-              <svg className="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <Link href="/my-interests" className="glass-card rounded-xl p-4 hover:border-purple-500/30 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-300 group">
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 bg-gradient-to-br from-blue-500/20 to-cyan-600/20 rounded-xl flex items-center justify-center border border-blue-500/20 group-hover:scale-110 transition-transform">
+              <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
+            </div>
+            <div>
+              <p className="text-slate-400 text-xs uppercase tracking-wider">Projects Interested</p>
+              <p className="text-2xl font-bold text-white">{stats.projectsInterested}</p>
             </div>
           </div>
         </Link>
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Quick Actions - Consistent height with lift effect */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <Link 
           href="/projects/new"
-          className="glass-card rounded-xl p-4 flex items-center gap-4 hover:border-purple-500/30 transition-all duration-300 group"
+          className="glass-card rounded-xl p-4 flex items-center gap-4 hover:border-purple-500/30 hover:-translate-y-1 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 group"
         >
-          <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+          <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/25 group-hover:scale-110 transition-transform">
             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </div>
           <div>
-            <p className="text-white font-medium">Create New Project</p>
+            <p className="text-white font-semibold">Create New Project</p>
             <p className="text-slate-400 text-sm">Share your idea</p>
           </div>
         </Link>
 
         <Link 
           href="/browse"
-          className="glass-card rounded-xl p-4 flex items-center gap-4 hover:border-purple-500/30 transition-all duration-300 group"
+          className="glass-card rounded-xl p-4 flex items-center gap-4 hover:border-purple-500/30 hover:-translate-y-1 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 group"
         >
-          <div className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+          <div className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
             <svg className="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
           <div>
-            <p className="text-white font-medium">Browse Projects</p>
+            <p className="text-white font-semibold">Browse Projects</p>
             <p className="text-slate-400 text-sm">Find collaborations</p>
           </div>
         </Link>
 
         <Link 
           href="/profile"
-          className="glass-card rounded-xl p-4 flex items-center gap-4 hover:border-purple-500/30 transition-all duration-300 group"
+          className="glass-card rounded-xl p-4 flex items-center gap-4 hover:border-purple-500/30 hover:-translate-y-1 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 group"
         >
-          <div className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+          <div className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform">
             <svg className="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </div>
           <div>
-            <p className="text-white font-medium">Edit Profile</p>
+            <p className="text-white font-semibold">Edit Profile</p>
             <p className="text-slate-400 text-sm">Update your skills</p>
           </div>
         </Link>
@@ -270,24 +276,33 @@ const DashboardPage = () => {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-white">Projects You Might Like</h2>
-          <Link href="/browse" className="text-purple-400 hover:text-purple-300 text-sm transition-colors">
-            View All →
+          <Link href="/browse" className="text-purple-400 hover:text-purple-300 text-sm transition-colors inline-flex items-center gap-1 group">
+            View All 
+            <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </Link>
         </div>
 
         {recommendedProjects.length === 0 ? (
-          <div className="glass-card rounded-xl p-8 text-center">
-            <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          <div className="glass-card rounded-2xl p-10 text-center border border-dashed border-slate-700">
+            {/* Illustrated empty state */}
+            <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-purple-500/20">
+              <svg className="w-10 h-10 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-white mb-2">No recommendations yet</h3>
-            <p className="text-slate-400 text-sm mb-4">Complete your profile with skills to get better matches!</p>
+            <h3 className="text-xl font-semibold text-white mb-2">No recommendations yet</h3>
+            <p className="text-slate-400 text-sm mb-6 max-w-sm mx-auto">
+              Complete your profile with skills to get better matches!
+            </p>
             <Link 
               href="/profile"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-medium hover:opacity-90 transition-opacity shadow-lg shadow-purple-500/25"
             >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
               Complete Profile
             </Link>
           </div>
