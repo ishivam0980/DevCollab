@@ -46,12 +46,24 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user, account, trigger, session }) {
+      // Initial sign in
       if (user) {
         token.id = user.id;
         token.provider = user.provider || account?.provider || 'credentials';
         token.picture = user.image;
+        
+        // For credentials provider, fetch latest user data from DB
+        if (account?.provider === 'credentials' || !account) {
+          await connectDB();
+          const dbUser = await User.findOne({ email: user.email });
+          if (dbUser) {
+            token.picture = dbUser.image || user.image;
+            token.name = dbUser.name || user.name;
+          }
+        }
       }
       
+      // Handle session update (from profile page)
       if (trigger === "update" && session?.user) {
         return { ...token, ...session.user, picture: session.user.image || token.picture };
       }
@@ -77,6 +89,11 @@ export const authOptions: NextAuthOptions = {
             image: user.image,
             provider: account.provider,
           });
+        } else {
+          // Use the DB image if it exists (user may have updated their profile pic)
+          if (existingUser.image) {
+            user.image = existingUser.image;
+          }
         }
       }
       return true;

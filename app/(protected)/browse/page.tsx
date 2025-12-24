@@ -270,16 +270,18 @@ const BrowsePage = () => {
 
             {/* Tech Stack Filter */}
             <div className="mt-4">
-              <label className="block text-sm text-slate-400 mb-2">Tech Stack</label>
-              <div className="flex flex-wrap gap-2">
-                {TECH_SKILLS.slice(0, 15).map(tech => (
+              <label className="block text-sm text-slate-400 mb-2">Tech Stack ({TECH_SKILLS.length} available)</label>
+              <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-2">
+                {TECH_SKILLS.map(tech => (
                   <button
                     key={tech}
                     onClick={() => toggleTech(tech)}
                     className={`px-3 py-1 text-sm rounded-full border transition-colors ${
                       selectedTechStack.includes(tech)
                         ? 'bg-purple-500/20 text-purple-400 border-purple-500/30'
-                        : 'bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-500'
+                        : tech === 'Others' 
+                          ? 'bg-slate-700 text-slate-300 border-slate-600 hover:border-slate-400'
+                          : 'bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-500'
                     }`}
                   >
                     {tech}
@@ -293,9 +295,16 @@ const BrowsePage = () => {
 
       {/* Results Count */}
       <div className="flex items-center justify-between">
-        <p className="text-slate-400 text-sm">
-          {loading ? 'Loading...' : `${projects.length} project${projects.length !== 1 ? 's' : ''} found`}
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="text-slate-400 text-sm">
+            {loading ? 'Loading...' : `${projects.length} project${projects.length !== 1 ? 's' : ''} found`}
+          </p>
+          {!loading && projects.length > 0 && (
+            <span className="text-xs text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-full">
+              ✨ Sorted by skill match
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Loading State */}

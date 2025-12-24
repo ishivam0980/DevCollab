@@ -1,24 +1,30 @@
 export const TECH_SKILLS = [
   // Languages
-  'JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C#', 'Go', 'Rust', 'Ruby', 'PHP',
+  'JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C#', 'C', 'Go', 'Rust', 'Ruby', 'PHP', 'Kotlin', 'Swift', 'Scala', 'R',
   
   // Frontend
-  'React', 'Next.js', 'Vue.js', 'Angular', 'Svelte', 'HTML', 'CSS', 'Tailwind CSS',
+  'React', 'Next.js', 'Vue.js', 'Angular', 'Svelte', 'HTML', 'CSS', 'Tailwind CSS', 'Bootstrap', 'Sass/SCSS',
   
   // Backend
-  'Node.js', 'Express.js', 'Django', 'Flask', 'FastAPI', 'Spring Boot',
+  'Node.js', 'Express.js', 'Django', 'Flask', 'FastAPI', 'Spring Boot', 'Ruby on Rails', 'Laravel', 'ASP.NET',
   
   // Databases
-  'MongoDB', 'PostgreSQL', 'MySQL', 'Redis', 'Firebase', 'Supabase',
+  'MongoDB', 'PostgreSQL', 'MySQL', 'SQLite', 'Redis', 'Firebase', 'Supabase', 'DynamoDB', 'Cassandra',
   
   // DevOps/Cloud
-  'AWS', 'Google Cloud', 'Docker', 'Kubernetes', 'Git',
+  'AWS', 'Google Cloud', 'Azure', 'Docker', 'Kubernetes', 'Git', 'GitHub Actions', 'CI/CD', 'Linux', 'Nginx',
   
   // Mobile
-  'React Native', 'Flutter', 'Swift', 'Kotlin',
+  'React Native', 'Flutter', 'iOS', 'Android', 'Expo',
   
   // AI/ML
-  'TensorFlow', 'PyTorch', 'Machine Learning',
+  'TensorFlow', 'PyTorch', 'Machine Learning', 'Deep Learning', 'NLP', 'Computer Vision', 'OpenAI API', 'LangChain',
+  
+  // Other Technologies
+  'GraphQL', 'REST APIs', 'WebSockets', 'Blockchain', 'Web3', 'Solidity', 'Unity', 'Unreal Engine',
+  
+  // Last option for anything not listed
+  'Others'
 ];
 
 export const EXPERIENCE_LEVELS = ['Beginner', 'Intermediate', 'Advanced'];

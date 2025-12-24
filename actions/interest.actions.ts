@@ -200,14 +200,35 @@ export const getInterestedUsers = async(projectId: string) => {
             })
             .sort({ createdAt: -1 });
         
-        // Extract users from interests
-        const users = interests
+        // Extract users and calculate match scores
+        const projectTechStack = project.techStack || [];
+        const usersWithMatch = interests
             .map(i => i.user)
-            .filter(u => u !== null);
+            .filter(u => u !== null)
+            .map(u => {
+                const userSkills = u.skills || [];
+                // Calculate match: how many of project's tech stack does user have?
+                const matchingSkills = projectTechStack.filter((tech: string) => 
+                    userSkills.some((skill: string) => 
+                        skill.toLowerCase() === tech.toLowerCase()
+                    )
+                );
+                const matchScore = projectTechStack.length > 0 
+                    ? Math.round((matchingSkills.length / projectTechStack.length) * 100)
+                    : 0;
+                
+                return {
+                    ...u.toObject(),
+                    matchScore,
+                    matchingSkills
+                };
+            })
+            // Sort by match score (highest first)
+            .sort((a, b) => b.matchScore - a.matchScore);
         
         return { 
             success: true, 
-            users: JSON.parse(JSON.stringify(users)) 
+            users: JSON.parse(JSON.stringify(usersWithMatch)) 
         };
         
     } catch (error) {

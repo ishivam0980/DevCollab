@@ -23,6 +23,8 @@ interface InterestedUser {
   image?: string;
   skills?: string[];
   experienceLevel?: string;
+  matchScore?: number;
+  matchingSkills?: string[];
 }
 
 interface Project {
@@ -83,6 +85,8 @@ const ProjectDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => 
         // Check if current user is the owner by comparing emails
         if (session?.user?.email && result.project.owner?.email === session.user.email) {
           setIsOwner(true)
+          // Auto-fetch interested users for owner
+          fetchInterestedUsers()
         }
       } else {
         setError(result.error || 'Project not found')
@@ -298,37 +302,52 @@ const ProjectDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => 
           {/* Interested Users (Owner Only) */}
           {isOwner && interestedUsers.length > 0 && (
             <div className="glass-card rounded-xl p-6">
-              <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                Interested Developers ({interestedUsers.length})
-              </h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                  <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  Interested Developers ({interestedUsers.length})
+                </h2>
+                <span className="text-xs text-slate-500 bg-slate-800 px-2 py-1 rounded">Sorted by skill match</span>
+              </div>
               <div className="space-y-3">
                 {interestedUsers.map(user => (
-                  <div key={user._id} className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg">
+                  <div key={user._id} className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-slate-800">
                     <div className="flex items-center gap-3">
-                      <img 
-                        src={user.image || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`}
-                        alt={user.name}
-                        className="w-10 h-10 rounded-full"
-                      />
+                      <div className="relative">
+                        <img 
+                          src={user.image || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`}
+                          alt={user.name}
+                          className="w-10 h-10 rounded-full object-cover bg-slate-800"
+                        />
+                        {/* Match score badge */}
+                        <div className={`absolute -bottom-1 -right-1 px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
+                          (user.matchScore || 0) >= 70 ? 'bg-green-500 text-white' :
+                          (user.matchScore || 0) >= 40 ? 'bg-yellow-500 text-black' :
+                          'bg-slate-600 text-white'
+                        }`}>
+                          {user.matchScore || 0}%
+                        </div>
+                      </div>
                       <div>
                         <p className="text-white font-medium">{user.name}</p>
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-slate-500">{user.experienceLevel}</span>
-                          {user.skills && user.skills.length > 0 && (
-                            <span className="text-xs text-slate-500">• {user.skills.slice(0, 3).join(', ')}</span>
+                          {user.matchingSkills && user.matchingSkills.length > 0 && (
+                            <span className="text-xs text-green-400">• Matches: {user.matchingSkills.slice(0, 2).join(', ')}</span>
                           )}
                         </div>
                       </div>
                     </div>
-                    <Link 
-                      href={`mailto:${user.email}`}
+                    <a 
+                      href={`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(user.email)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="px-3 py-1.5 text-sm bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-colors"
                     >
                       Contact
-                    </Link>
+                    </a>
                   </div>
                 ))}
               </div>
@@ -345,7 +364,7 @@ const ProjectDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => 
               <img 
                 src={project.owner?.image || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(project.owner?.name || 'User')}`}
                 alt={project.owner?.name}
-                className="w-12 h-12 rounded-full"
+                className="w-12 h-12 rounded-full object-cover bg-slate-800"
               />
               <div>
                 <p className="text-white font-medium">{project.owner?.name}</p>
@@ -368,15 +387,12 @@ const ProjectDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => 
                   </svg>
                   Edit Project
                 </Link>
-                <button
-                  onClick={fetchInterestedUsers}
-                  className="w-full py-3 bg-slate-800 text-slate-300 rounded-lg font-medium hover:bg-slate-700 transition-colors flex items-center justify-center gap-2"
-                >
+                <div className="flex items-center justify-center gap-2 py-3 bg-slate-800/50 text-slate-400 rounded-lg">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  View Interested Users ({interestCount})
-                </button>
+                  <span>{interestCount} Interested</span>
+                </div>
                 <button
                   onClick={() => setShowDeleteModal(true)}
                   className="w-full py-3 bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg font-medium hover:bg-red-500/20 transition-colors flex items-center justify-center gap-2"
