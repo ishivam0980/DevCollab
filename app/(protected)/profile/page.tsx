@@ -50,9 +50,44 @@ const ProfilePage = () => {
   })
 
   const backupData = useRef<ProfileData | null>(null)
+  
+  // Skill selection state
   const [showSkillSelector, setShowSkillSelector] = useState(false)
-  const skillSelectRef = useRef<HTMLSelectElement>(null)
+  const [skillSearch, setSkillSearch] = useState('')
+  const skillDropdownRef = useRef<HTMLDivElement>(null)
+  
   const [isUploading, setIsUploading] = useState(false)
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (skillDropdownRef.current && !skillDropdownRef.current.contains(event.target as Node)) {
+        setShowSkillSelector(false)
+      }
+    }
+    if (showSkillSelector) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showSkillSelector])
+
+  // Filter skills based on search
+  const filteredSkills = (() => {
+    // 1. Get matches (exclude 'Others' to avoid duplication/filtering issues)
+    const filtered = TECH_SKILLS.filter(skill => 
+      !data.skills.includes(skill) && 
+      skill !== 'Others' &&
+      skill.toLowerCase().includes(skillSearch.toLowerCase())
+    )
+    
+    // 2. Always show "Others" at the end if not already selected
+    // This allows users to select it even if their search matches other items partially
+    if (!data.skills.includes('Others')) {
+      filtered.push('Others')
+    }
+    
+    return filtered
+  })()
 
   const fetchProfileDetails = async () => {
     setLoading(true);
@@ -185,16 +220,15 @@ const ProfilePage = () => {
     }))
   }
 
-  const addSkill = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newSkill = e.target.value
-    if (newSkill && !data.skills.includes(newSkill)) {
+  const addSkill = (skill: string) => {
+    if (skill && !data.skills.includes(skill)) {
       setData(prev => ({
         ...prev,
-        skills: [...prev.skills, newSkill]
+        skills: [...prev.skills, skill]
       }))
     }
+    setSkillSearch('')
     setShowSkillSelector(false)
-    if(skillSelectRef.current) skillSelectRef.current.value = ""
   }
 
   const getExperienceBadgeStyle = (level: string) => {
@@ -484,12 +518,49 @@ const ProfilePage = () => {
                     ))}
                   </div>
                   {showSkillSelector ? (
-                    <select ref={skillSelectRef} onChange={addSkill} onBlur={() => setShowSkillSelector(false)} autoFocus className="bg-slate-900 border border-white/10 text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-white/30 cursor-pointer w-full sm:w-auto">
-                      <option value="">Select a skill...</option>
-                      {TECH_SKILLS.filter(skill => !data.skills.includes(skill)).map(skill => (<option key={skill} value={skill}>{skill}</option>))}
-                    </select>
+                    <div className="relative w-full max-w-xs" ref={skillDropdownRef}>
+                      <div className="relative">
+                        <input
+                          type="text" 
+                          value={skillSearch}
+                          onChange={(e) => setSkillSearch(e.target.value)}
+                          className="w-full bg-slate-900 border border-purple-500/50 text-white text-sm rounded-xl pl-4 pr-10 py-2.5 focus:outline-none focus:border-purple-500 shadow-lg shadow-purple-500/10 transition-all placeholder:text-slate-600"
+                          placeholder="Search skills..."
+                          autoFocus
+                        />
+                        <button 
+                          onClick={() => setShowSkillSelector(false)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                      </div>
+                      
+                      <div className="absolute z-50 w-full mt-2 bg-slate-800 border border-slate-700 rounded-xl shadow-xl max-h-60 overflow-y-auto overflow-x-hidden">
+                        {filteredSkills.length > 0 ? (
+                          filteredSkills.map(skill => (
+                            <button
+                              key={skill}
+                              onClick={() => addSkill(skill)}
+                              className="w-full text-left px-4 py-2.5 text-sm text-slate-300 hover:bg-purple-500/20 hover:text-white transition-colors border-b border-slate-700/50 last:border-0"
+                            >
+                              {skill}
+                            </button>
+                          ))
+                        ) : (
+                          <div className="px-4 py-3 text-sm text-slate-500 text-center italic">
+                            No matching skills found
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   ) : (
-                    <button onClick={() => setShowSkillSelector(true)} className="flex items-center gap-2 text-sm text-white bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-xl transition-all cursor-pointer"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>Add Skill</button>
+                    <button onClick={() => setShowSkillSelector(true)} className="flex items-center gap-2 text-sm text-white bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-xl transition-all cursor-pointer hover:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/5 group">
+                      <div className="w-5 h-5 rounded-md bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
+                        <svg className="w-3 h-3 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                      </div>
+                      Add Skill
+                    </button>
                   )}
                 </div>
               ) : (

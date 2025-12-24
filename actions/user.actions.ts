@@ -99,6 +99,48 @@ export async function getProfile(): Promise<GetProfileResponse> {
 }
 
 // ============================================
+// 1.5 GET USER BY ID - Fetch public user profile
+// ============================================
+export async function getUserById(userId: string): Promise<GetProfileResponse> {
+  try {
+    await connectDB();
+    
+    // Validate ObjectId format
+    if (!userId || !/^[a-fA-F0-9]{24}$/.test(userId)) {
+      return { success: false, error: 'Invalid user ID' };
+    }
+    
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return { success: false, error: 'User not found' };
+    }
+    
+    return {
+      success: true,
+      user: {
+        id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        image: user.image,
+        bio: user.bio || '',
+        location: user.location || '',
+        skills: user.skills || [],
+        experienceLevel: user.experienceLevel || 'Beginner',
+        githubUrl: user.githubUrl || '',
+        linkedinUrl: user.linkedinUrl || '',
+        leetcodeUrl: user.leetcodeUrl || '',
+        codechefUrl: user.codechefUrl || '',
+        codeforcesUrl: user.codeforcesUrl || '',
+        createdAt: user.createdAt
+      }
+    };
+  } catch (error) {
+    console.error('Error fetching user by ID:', error);
+    return { success: false, error: 'Failed to fetch user' };
+  }
+}
+// ============================================
 // 2. UPDATE PROFILE - Save profile changes
 // ============================================
 export async function updateProfile(formData: FormData): Promise<ActionResponse> {

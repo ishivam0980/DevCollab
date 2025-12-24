@@ -71,6 +71,13 @@ const ProjectDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
 
+  // Helper: Get profile URL (own profile vs public profile)
+  const getProfileUrl = (userId: string, userEmail?: string) => {
+    // Compare by email since session.user.id may not always be available
+    if (userEmail && session?.user?.email === userEmail) return '/profile'
+    return `/users/${userId}`
+  }
+
   // Fetch project data on mount and when session changes
   useEffect(() => {
     fetchProject()
@@ -357,12 +364,12 @@ const ProjectDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => 
               <div className="space-y-3">
                 {interestedUsers.map(user => (
                   <div key={user._id} className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-slate-800">
-                    <div className="flex items-center gap-3">
+                    <Link href={getProfileUrl(user._id, user.email)} className="flex items-center gap-3 group">
                       <div className="relative">
                         <img 
                           src={user.image || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(user.name)}`}
                           alt={user.name}
-                          className="w-10 h-10 rounded-full object-cover bg-slate-800"
+                          className="w-10 h-10 rounded-full object-cover bg-slate-800 group-hover:ring-2 ring-purple-500/50 transition-all"
                         />
                         {/* Match score badge */}
                         <div className={`absolute -bottom-1 -right-1 px-1.5 py-0.5 text-[10px] font-bold rounded-full ${
@@ -374,7 +381,7 @@ const ProjectDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => 
                         </div>
                       </div>
                       <div>
-                        <p className="text-white font-medium">{user.name}</p>
+                        <p className="text-white font-medium group-hover:text-purple-300 transition-colors">{user.name}</p>
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-slate-500">{user.experienceLevel}</span>
                           {user.matchingSkills && user.matchingSkills.length > 0 && (
@@ -382,7 +389,7 @@ const ProjectDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => 
                           )}
                         </div>
                       </div>
-                    </div>
+                    </Link>
                     <a 
                       href={`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(user.email)}`}
                       target="_blank"
@@ -403,17 +410,17 @@ const ProjectDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => 
           {/* Owner Card */}
           <div className="glass-card rounded-xl p-6">
             <h3 className="text-sm text-slate-400 mb-4">Posted by</h3>
-            <div className="flex items-center gap-3 mb-4">
+            <Link href={getProfileUrl(project.owner?._id, project.owner?.email)} className="flex items-center gap-3 mb-4 group hover:bg-white/5 -mx-2 px-2 py-2 rounded-lg transition-all">
               <img 
                 src={project.owner?.image || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(project.owner?.name || 'User')}`}
                 alt={project.owner?.name}
-                className="w-12 h-12 rounded-full object-cover bg-slate-800"
+                className="w-12 h-12 rounded-full object-cover bg-slate-800 group-hover:ring-2 ring-purple-500/50 transition-all"
               />
               <div className="min-w-0 flex-1">
-                <p className="text-white font-medium">{project.owner?.name}</p>
+                <p className="text-white font-medium group-hover:text-purple-300 transition-colors">{project.owner?.name}</p>
                 <p className="text-xs text-slate-500 break-all">{project.owner?.email}</p>
               </div>
-            </div>
+            </Link>
           </div>
 
           {/* Action Buttons */}

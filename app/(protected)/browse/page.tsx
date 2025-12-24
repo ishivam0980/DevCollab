@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
 import { getProjectsWithMatching } from "@/actions/project.actions"
 import { TECH_SKILLS, EXPERIENCE_LEVELS, PROJECT_CATEGORIES } from "@/lib/constants"
 import { motion } from "framer-motion"
@@ -36,8 +37,15 @@ interface Project {
 }
 
 const BrowsePage = () => {
+  const { data: session } = useSession()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
+
+  // Helper: Get profile URL (own profile vs public profile)
+  const getProfileUrl = (userId: string, userEmail?: string) => {
+    if (userEmail && session?.user?.email === userEmail) return '/profile'
+    return `/users/${userId}`
+  }
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
@@ -477,17 +485,17 @@ const BrowsePage = () => {
 
                     {/* Footer: Owner & Stats */}
                     <div className="mt-auto pt-4 border-t border-slate-700/50 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
+                      <Link href={getProfileUrl(project.owner?._id, project.owner?.email)} className="flex items-center gap-2 group" onClick={(e) => e.stopPropagation()}>
                         {/* Avatar with gradient ring */}
-                        <div className="p-0.5 rounded-full bg-gradient-to-br from-purple-500 to-blue-500">
+                        <div className="p-0.5 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 group-hover:from-pink-500 group-hover:to-purple-500 transition-all">
                           <img 
                             src={project.owner?.image || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(project.owner?.name || 'User')}`}
                             alt={project.owner?.name}
                             className="w-6 h-6 rounded-full border border-slate-900 object-cover"
                           />
                         </div>
-                        <span className="text-sm text-slate-400">{project.owner?.name}</span>
-                      </div>
+                        <span className="text-sm text-slate-400 group-hover:text-purple-300 transition-colors">{project.owner?.name}</span>
+                      </Link>
                       <div className="flex items-center gap-3 text-xs text-slate-500">
                         <span className="flex items-center gap-1">
                           <svg className="w-4 h-4 text-pink-400" fill="currentColor" viewBox="0 0 24 24">
@@ -529,12 +537,7 @@ const BrowsePage = () => {
                 </>
               )}
             </button>
-          ) : (
-            <p className="text-slate-500 text-sm">You've reached the end</p>
-          )}
-          <p className="text-slate-500 text-xs">
-            Showing {projects.length} of {totalCount} projects
-          </p>
+          ) : null}
         </div>
       )}
     </motion.div>

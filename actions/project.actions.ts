@@ -148,6 +148,29 @@ export const getProjects = async(keywords?: string) => {
     }
 }
 
+// Get all projects by a specific user ID
+export const getProjectsByUserId = async (userId: string) => {
+    try {
+        await connectDB();
+        
+        // Validate ObjectId format
+        if (!userId || !/^[a-fA-F0-9]{24}$/.test(userId)) {
+            return { success: false, error: 'Invalid user ID' };
+        }
+        
+        const projects = await Project.find({ owner: userId })
+            .populate('owner', 'name email image')
+            .sort({ createdAt: -1 });
+        
+        return {
+            success: true,
+            projects: JSON.parse(JSON.stringify(projects))
+        };
+    } catch (error) {
+        console.error('Get projects by user error:', error);
+        return { success: false, error: 'Failed to fetch projects' };
+    }
+}
 export const getProject=async(projectId:string)=>{
     try {
         //Here we didnt do auth check. As public user can also view project

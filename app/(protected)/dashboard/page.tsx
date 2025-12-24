@@ -49,6 +49,12 @@ const DashboardPage = () => {
   const [profileCompletion, setProfileCompletion] = useState(0)
   const [missingFields, setMissingFields] = useState<string[]>([])
 
+  // Helper: Get profile URL (own profile vs public profile)
+  const getProfileUrl = (userId: string, userEmail?: string) => {
+    if (userEmail && session?.user?.email === userEmail) return '/profile'
+    return `/users/${userId}`
+  }
+
   useEffect(() => {
     fetchDashboardData()
   }, [])
@@ -339,14 +345,14 @@ const DashboardPage = () => {
                     </div>
 
                     {/* Owner */}
-                    <div className="mt-auto flex items-center gap-2 pt-3 border-t border-slate-700/50">
+                    <Link href={getProfileUrl(project.owner?._id, project.owner?.email)} onClick={(e) => e.stopPropagation()} className="mt-auto flex items-center gap-2 pt-3 border-t border-slate-700/50 group hover:bg-white/5 -mx-2 px-2 py-1 rounded transition-all">
                       <img 
                         src={project.owner?.image || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(project.owner?.name || 'User')}`}
                         alt={project.owner?.name}
-                        className="w-5 h-5 rounded-full"
+                        className="w-5 h-5 rounded-full group-hover:ring-2 ring-purple-500/50 transition-all"
                       />
-                      <span className="text-xs text-slate-500">{project.owner?.name}</span>
-                    </div>
+                      <span className="text-xs text-slate-500 group-hover:text-purple-300 transition-colors">{project.owner?.name}</span>
+                    </Link>
                   </div>
                 </Link>
               </div>

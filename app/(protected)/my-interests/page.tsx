@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
 import { getMyInterests, toggleInterest } from "@/actions/interest.actions"
 import { motion } from "framer-motion"
 import Link from "next/link"
@@ -27,10 +28,17 @@ interface Project {
 }
 
 const MyInterestsPage = () => {
+  const { data: session } = useSession()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [withdrawingId, setWithdrawingId] = useState<string | null>(null)
+
+  // Helper: Get profile URL (own profile vs public profile)
+  const getProfileUrl = (userId: string, userEmail?: string) => {
+    if (userEmail && session?.user?.email === userEmail) return '/profile'
+    return `/users/${userId}`
+  }
 
   useEffect(() => {
     fetchInterests()
@@ -227,16 +235,16 @@ const MyInterestsPage = () => {
                 </div>
 
                 {/* Owner */}
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="p-0.5 rounded-full bg-gradient-to-br from-purple-500 to-blue-500">
+                <Link href={getProfileUrl(project.owner?._id, project.owner?.email)} className="flex items-center gap-2 mb-4 group" onClick={(e) => e.stopPropagation()}>
+                  <div className="p-0.5 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 group-hover:from-pink-500 group-hover:to-purple-500 transition-all">
                     <img 
                       src={project.owner?.image || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(project.owner?.name || 'User')}`}
                       alt={project.owner?.name}
                       className="w-6 h-6 rounded-full border border-slate-900 object-cover"
                     />
                   </div>
-                  <span className="text-sm text-slate-400">{project.owner?.name}</span>
-                </div>
+                  <span className="text-sm text-slate-400 group-hover:text-purple-300 transition-colors">{project.owner?.name}</span>
+                </Link>
 
                 {/* Footer */}
                 <div className="mt-auto pt-4 border-t border-slate-700/50 flex items-center justify-between">
