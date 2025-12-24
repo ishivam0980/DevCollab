@@ -99,12 +99,6 @@ const NewProjectPage = () => {
     >
       {/* Page Header */}
       <div className="mb-8">
-        <Link href="/browse" className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Back to Browse
-        </Link>
         <h1 className="text-3xl font-bold text-white">Create New Project</h1>
         <p className="text-slate-400 mt-2">Share your project idea and find collaborators</p>
       </div>
