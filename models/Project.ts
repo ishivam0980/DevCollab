@@ -33,6 +33,11 @@ const ProjectSchema = new Schema({
     default: '1-3 months'
   },
   
+  // Project Links (optional)
+  githubUrl: { type: String },
+  liveUrl: { type: String },
+  figmaUrl: { type: String },
+  
   // Status
   status: { 
     type: String, 

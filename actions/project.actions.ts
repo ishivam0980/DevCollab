@@ -301,12 +301,14 @@ export const getProjectsWithMatching = async(
         let query: any = {};
         
         // Use regex search for keywords (more reliable than $text)
+        // Searches: title, description, shortDescription, AND techStack
         if (keywords && keywords.trim()) {
             const searchRegex = new RegExp(keywords.trim(), 'i');
             query.$or = [
                 { title: searchRegex },
                 { description: searchRegex },
-                { shortDescription: searchRegex }
+                { shortDescription: searchRegex },
+                { techStack: { $elemMatch: { $regex: searchRegex } } }
             ];
         }
         
@@ -349,12 +351,12 @@ export const getProjectsWithMatching = async(
                 const userExperience = userProfile.experienceLevel || 'Beginner';
                 const profileComplete = isProfileComplete(userProfile);
                 
-                projectsWithScores = projectsWithScores.map(project => {
-                    // Don't show match for your own projects
-                    if (project.owner?.email === currentUser.email) {
-                        project.matchScore = null;
-                        project.isOwner = true;
-                    } else {
+                projectsWithScores = projectsWithScores
+                    .filter(project => {
+                        // Filter out user's own projects from browse
+                        return project.owner?.email !== currentUser.email;
+                    })
+                    .map(project => {
                         project.matchScore = calculateMatchScore(
                             userSkills,
                             userExperience,
@@ -363,9 +365,10 @@ export const getProjectsWithMatching = async(
                             project.experienceLevel || 'Beginner'
                         );
                         project.isOwner = false;
-                    }
-                    return project;
-                });
+                        return project;
+                    })
+                    // Sort by matchScore descending (highest first)
+                    .sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
             }
         }
         

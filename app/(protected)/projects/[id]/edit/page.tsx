@@ -1,458 +1,243 @@
 'use client'
 
-import { useState, useEffect, use } from "react"
+import { useState, useEffect, use, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { getProject, updateProject } from "@/actions/project.actions"
 import { TECH_SKILLS, EXPERIENCE_LEVELS, PROJECT_CATEGORIES, TEAM_SIZES, PROJECT_DURATIONS, PROJECT_STATUSES } from "@/lib/constants"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
+
+const STEPS = [
+  { name: 'Basic Info', icon: '📝' },
+  { name: 'Tech Stack', icon: '⚡' },
+  { name: 'Details', icon: '📋' },
+  { name: 'Links', icon: '🔗' },
+]
 
 const EditProjectPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params)
   const router = useRouter()
   const { data: session } = useSession()
-  
+
   const [loading, setLoading] = useState(true)
+  const [currentStep, setCurrentStep] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notAuthorized, setNotAuthorized] = useState(false)
-  
-  // Form State
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    shortDescription: '',
-    techStack: [] as string[],
-    category: 'Web App',
-    experienceLevel: 'Beginner',
-    teamSize: '1-2',
-    duration: '1-3 months',
-    status: 'Looking for collaborators'
+    title: '', description: '', shortDescription: '', techStack: [] as string[],
+    category: 'Web App', experienceLevel: 'Beginner', teamSize: '1-2',
+    duration: '1-3 months', status: 'Looking for collaborators',
+    githubUrl: '', liveUrl: '', figmaUrl: ''
   })
-
   const [showTechDropdown, setShowTechDropdown] = useState(false)
   const [techSearch, setTechSearch] = useState('')
+  const techDropdownRef = useRef<HTMLDivElement>(null)
 
-  // Fetch existing project data - only on id change
+  // Close dropdown when clicking anywhere on page
   useEffect(() => {
-    if (id) {
-      fetchProject()
+    const handleClickOutside = (event: MouseEvent) => {
+      if (techDropdownRef.current && !techDropdownRef.current.contains(event.target as Node)) {
+        setShowTechDropdown(false)
+      }
     }
-  }, [id])
+    if (showTechDropdown) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showTechDropdown])
+
+  useEffect(() => { if (id) fetchProject() }, [id])
 
   const fetchProject = async () => {
     setLoading(true)
     try {
       const result = await getProject(id)
       if (result.success && result.project) {
-        // Check if user is the owner
-        if (session?.user?.email && result.project.owner?.email !== session.user.email) {
-          setNotAuthorized(true)
-          return
-        }
-        
-        // Populate form with existing data
+        if (session?.user?.email && result.project.owner?.email !== session.user.email) { setNotAuthorized(true); return }
         setFormData({
-          title: result.project.title || '',
-          description: result.project.description || '',
-          shortDescription: result.project.shortDescription || '',
-          techStack: result.project.techStack || [],
-          category: result.project.category || 'Web App',
-          experienceLevel: result.project.experienceLevel || 'Beginner',
-          teamSize: result.project.teamSize || '1-2',
-          duration: result.project.duration || '1-3 months',
-          status: result.project.status || 'Looking for collaborators'
+          title: result.project.title || '', description: result.project.description || '',
+          shortDescription: result.project.shortDescription || '', techStack: result.project.techStack || [],
+          category: result.project.category || 'Web App', experienceLevel: result.project.experienceLevel || 'Beginner',
+          teamSize: result.project.teamSize || '1-2', duration: result.project.duration || '1-3 months',
+          status: result.project.status || 'Looking for collaborators',
+          githubUrl: result.project.githubUrl || '', liveUrl: result.project.liveUrl || '', figmaUrl: result.project.figmaUrl || ''
         })
-      } else {
-        setError(result.error || 'Project not found')
-      }
-    } catch (err) {
-      setError('Failed to load project')
-    } finally {
-      setLoading(false)
+      } else { setError(result.error || 'Project not found') }
+    } catch { setError('Failed to load project') }
+    finally { setLoading(false) }
+  }
+
+  const handleChange = (field: string, value: string) => setFormData(prev => ({ ...prev, [field]: value }))
+  const toggleTech = (tech: string) => setFormData(prev => ({ ...prev, techStack: prev.techStack.includes(tech) ? prev.techStack.filter(t => t !== tech) : [...prev.techStack, tech] }))
+  const removeTech = (tech: string) => setFormData(prev => ({ ...prev, techStack: prev.techStack.filter(t => t !== tech) }))
+
+  const filteredTechSkills = (() => {
+    const filtered = TECH_SKILLS.filter(tech => 
+      tech !== 'Others' && 
+      tech.toLowerCase().includes(techSearch.toLowerCase()) && 
+      !formData.techStack.includes(tech)
+    );
+    // Always show "Others" at the end if: not already selected AND (no search OR no matches OR search includes "others")
+    if (!formData.techStack.includes('Others') && (techSearch === '' || filtered.length === 0 || 'others'.includes(techSearch.toLowerCase()))) {
+      filtered.push('Others');
     }
+    return filtered;
+  })()
+
+  const validateStep = (): boolean => {
+    if (currentStep === 0 && !formData.title.trim()) { setError('Project title is required'); return false; }
+    if (currentStep === 0 && !formData.description.trim()) { setError('Description is required'); return false; }
+    if (currentStep === 1 && formData.techStack.length === 0) { setError('Select at least one technology'); return false; }
+    setError(null); return true;
   }
 
-  // Handle form input changes
-  const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
+  const nextStep = () => { if (validateStep()) setCurrentStep(prev => Math.min(prev + 1, 3)) }
+  const prevStep = () => { setError(null); setCurrentStep(prev => Math.max(prev - 1, 0)) }
 
-  // Toggle tech stack selection
-  const toggleTech = (tech: string) => {
-    setFormData(prev => ({
-      ...prev,
-      techStack: prev.techStack.includes(tech)
-        ? prev.techStack.filter(t => t !== tech)
-        : [...prev.techStack, tech]
-    }))
-  }
-
-  // Remove tech from selection
-  const removeTech = (tech: string) => {
-    setFormData(prev => ({
-      ...prev,
-      techStack: prev.techStack.filter(t => t !== tech)
-    }))
-  }
-
-  // Filter tech skills based on search - LIMIT to 15 for performance
-  const filteredTechSkills = TECH_SKILLS.filter(tech => 
-    tech.toLowerCase().includes(techSearch.toLowerCase())
-  ).slice(0, 15)
-
-  // Form submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setIsSubmitting(true)
-
+  const handleSubmit = async () => {
+    if (!validateStep()) return;
+    setIsSubmitting(true); setError(null)
     try {
-      // Client-side validation
-      if (!formData.title.trim()) {
-        throw new Error('Project title is required')
-      }
-      if (!formData.description.trim()) {
-        throw new Error('Project description is required')
-      }
-      if (formData.techStack.length === 0) {
-        throw new Error('Please select at least one technology')
-      }
-
       const result = await updateProject(id, formData)
-      
-      if (result.error) {
-        throw new Error(result.error)
-      }
-
-      // Success! Redirect to project page
+      if (result.error) throw new Error(result.error)
       router.push(`/projects/${id}`)
-      
-    } catch (err: any) {
-      setError(err.message || 'Failed to update project')
-    } finally {
-      setIsSubmitting(false)
-    }
+    } catch (err: any) { setError(err.message || 'Failed to update') }
+    finally { setIsSubmitting(false) }
   }
 
-  // Loading State
-  if (loading) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative w-16 h-16">
-            <div className="absolute inset-0 rounded-full border-t-2 border-purple-500 animate-spin"></div>
-            <div className="absolute inset-2 rounded-full border-r-2 border-pink-500 animate-spin [animation-direction:reverse]"></div>
-            <div className="absolute inset-4 rounded-full border-b-2 border-blue-500 animate-spin"></div>
-          </div>
-          <p className="text-slate-400 text-sm tracking-widest uppercase">Loading Project...</p>
-        </div>
-      </div>
-    )
-  }
+  if (loading) return (
+    <div className="flex items-center justify-center h-[60vh]">
+      <div className="w-10 h-10 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
+    </div>
+  )
 
-  // Not Authorized State
-  if (notAuthorized) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="text-center glass-card p-8 rounded-2xl border border-red-500/20 max-w-md">
-          <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
-            <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-bold text-white mb-2">Not Authorized</h2>
-          <p className="text-slate-400 mb-6">You can only edit projects that you own.</p>
-          <Link href="/browse" className="text-purple-400 hover:text-purple-300 transition-colors">
-            ← Back to Browse
-          </Link>
-        </div>
-      </div>
-    )
-  }
-
-  // Error State
-  if (error && !formData.title) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="text-center glass-card p-8 rounded-2xl border border-red-500/20 max-w-md">
-          <h2 className="text-xl font-bold text-white mb-2">Error</h2>
-          <p className="text-slate-400 mb-6">{error}</p>
-          <Link href="/browse" className="text-purple-400 hover:text-purple-300 transition-colors">
-            ← Back to Browse
-          </Link>
-        </div>
-      </div>
-    )
-  }
+  if (notAuthorized) return (
+    <div className="text-center glass-card p-8 rounded-xl max-w-sm mx-auto border border-white/10">
+      <h2 className="text-lg font-bold text-white mb-2">Not Authorized</h2>
+      <p className="text-slate-400 text-sm mb-4">You can only edit your own projects.</p>
+      <Link href="/my-projects" className="text-purple-400 hover:text-purple-300 text-sm">← My Projects</Link>
+    </div>
+  )
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-      className="max-w-3xl mx-auto"
-    >
-      {/* Page Header */}
-      <div className="mb-8">
-        <Link href={`/projects/${id}`} className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Back to Project
-        </Link>
-        <h1 className="text-3xl font-bold text-white">Edit Project</h1>
-        <p className="text-slate-400 mt-2">Update your project details</p>
+    <div className="max-w-4xl mx-auto h-[calc(100vh-80px)] flex flex-col">
+      {/* Header */}
+      <div className="text-center mb-5">
+        <div className="inline-flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+          </div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+            Edit Project
+          </h1>
+        </div>
+        <p className="text-slate-400 text-sm">Update your project details</p>
       </div>
 
-      {/* Error Message */}
-      {error && (
-        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-3">
-          <svg className="w-5 h-5 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <p className="text-red-400">{error}</p>
-        </div>
-      )}
-
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Basic Info Section */}
-        <div className="glass-card rounded-xl p-6 space-y-5">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-            <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Basic Information
-          </h2>
-
-          {/* Title */}
-          <div>
-            <label className="block text-sm text-slate-400 mb-2">
-              Project Title <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) => handleChange('title', e.target.value)}
-              placeholder="e.g., AI Chatbot for Customer Support"
-              className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
-              maxLength={100}
-            />
+      {/* Segmented Progress Bar */}
+      <div className="flex gap-1.5 mb-4">
+        {STEPS.map((step, i) => (
+          <div key={step.name} className="flex-1 h-1.5 rounded-full overflow-hidden bg-slate-800">
+            <div className={`h-full transition-all duration-300 ${i < currentStep ? 'bg-green-500' : i === currentStep ? 'bg-gradient-to-r from-purple-500 to-blue-500' : ''}`} style={{ width: i <= currentStep ? '100%' : '0%' }} />
           </div>
+        ))}
+      </div>
 
-          {/* Short Description */}
-          <div>
-            <label className="block text-sm text-slate-400 mb-2">Short Description</label>
-            <input
-              type="text"
-              value={formData.shortDescription}
-              onChange={(e) => handleChange('shortDescription', e.target.value)}
-              placeholder="Brief one-line summary"
-              className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
-              maxLength={100}
-            />
-          </div>
+      {/* Current Step Title */}
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-xl">{STEPS[currentStep].icon}</span>
+        <h2 className="text-lg font-semibold text-white">{STEPS[currentStep].name}</h2>
+        <span className="text-slate-500 text-sm ml-auto">Step {currentStep + 1} of {STEPS.length}</span>
+      </div>
 
-          {/* Full Description */}
-          <div>
-            <label className="block text-sm text-slate-400 mb-2">
-              Full Description <span className="text-red-400">*</span>
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => handleChange('description', e.target.value)}
-              placeholder="Describe your project in detail..."
-              rows={5}
-              className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors resize-none"
-            />
-          </div>
-        </div>
+      {/* Error */}
+      <AnimatePresence>
+        {error && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mb-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm flex items-center gap-2">
+            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            {error}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-        {/* Tech Stack Section - higher z-index for dropdown */}
-        <div className="glass-card rounded-xl p-6 space-y-5 relative z-20">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-            <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-            </svg>
-            Tech Stack <span className="text-red-400 text-sm">*</span>
-          </h2>
-
-          {/* Selected Tech */}
-          {formData.techStack.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {formData.techStack.map(tech => (
-                <span 
-                  key={tech} 
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-500/20 text-purple-400 rounded-full text-sm border border-purple-500/30"
-                >
-                  {tech}
-                  <button 
-                    type="button" 
-                    onClick={() => removeTech(tech)}
-                    className="hover:text-white transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </span>
-              ))}
-            </div>
+      {/* Content */}
+      <div className="flex-1 glass-card rounded-xl p-6 border border-white/10 overflow-auto">
+        <AnimatePresence mode="wait">
+          {currentStep === 0 && (
+            <motion.div key="s0" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="h-full flex flex-col gap-4">
+              <div><label className="block text-sm font-medium text-slate-300 mb-1.5">Project Title <span className="text-red-400">*</span></label><input type="text" value={formData.title} onChange={(e) => handleChange('title', e.target.value)} className="w-full px-4 py-2.5 bg-slate-800/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition-all" autoFocus /></div>
+              <div><label className="block text-sm font-medium text-slate-300 mb-1.5">Short Description</label><input type="text" value={formData.shortDescription} onChange={(e) => handleChange('shortDescription', e.target.value)} maxLength={100} className="w-full px-4 py-2.5 bg-slate-800/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-all" /></div>
+              <div className="flex-1 flex flex-col"><label className="block text-sm font-medium text-slate-300 mb-1.5">Full Description <span className="text-red-400">*</span></label><textarea value={formData.description} onChange={(e) => handleChange('description', e.target.value)} className="flex-1 min-h-[100px] w-full px-4 py-2.5 bg-slate-800/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-all resize-none" /></div>
+            </motion.div>
           )}
 
-          {/* Tech Search */}
-          <div className="relative">
-            <input
-              type="text"
-              value={techSearch}
-              onChange={(e) => setTechSearch(e.target.value)}
-              onFocus={() => setShowTechDropdown(true)}
-              placeholder="Search and select technologies..."
-              className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
-            />
-            
-            {showTechDropdown && (
-              <div className="absolute z-50 w-full mt-2 max-h-48 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl">
-                {filteredTechSkills.map(tech => (
-                  <button
-                    key={tech}
-                    type="button"
-                    onClick={() => toggleTech(tech)}
-                    className={`w-full px-4 py-2 text-left text-sm hover:bg-slate-800 transition-colors flex items-center justify-between ${
-                      formData.techStack.includes(tech) ? 'text-purple-400 bg-purple-500/10' : 'text-slate-300'
-                    }`}
-                  >
-                    {tech}
-                    {formData.techStack.includes(tech) && (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </button>
-                ))}
+          {currentStep === 1 && (
+            <motion.div key="s1" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="h-full flex flex-col gap-4">
+              <div className="relative" ref={techDropdownRef}>
+                <label className="block text-sm font-medium text-slate-300 mb-1.5">Technologies <span className="text-red-400">*</span></label>
+                <input type="text" value={techSearch} onChange={(e) => { setTechSearch(e.target.value); setShowTechDropdown(true); }} onFocus={() => setShowTechDropdown(true)} placeholder="Type to search..." className="w-full px-4 py-2.5 bg-slate-800/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-all" />
+                {showTechDropdown && (
+                  <div className="absolute z-50 w-full mt-1 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700 rounded-lg shadow-xl">
+                    {filteredTechSkills.map(tech => (
+                      <button key={tech} type="button" onClick={() => { toggleTech(tech); setTechSearch(''); setShowTechDropdown(false); }} className="w-full px-4 py-2 text-left hover:bg-purple-500/20 text-slate-300 text-sm transition-colors">{tech}</button>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-
-          {showTechDropdown && (
-            <div className="fixed inset-0 z-40" onClick={() => setShowTechDropdown(false)} />
+              <div className="flex-1 flex flex-wrap gap-2 p-4 bg-slate-800/40 rounded-lg border border-slate-700/50 content-start overflow-auto">
+                {formData.techStack.length > 0 ? formData.techStack.map(tech => (
+                  <span key={tech} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-300 rounded-lg text-sm border border-purple-500/30 h-fit">{tech}<button type="button" onClick={() => removeTech(tech)} className="hover:text-white transition-colors"><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button></span>
+                )) : <span className="text-slate-500 text-sm">No technologies selected</span>}
+              </div>
+            </motion.div>
           )}
-        </div>
 
-        {/* Project Details Section */}
-        <div className="glass-card rounded-xl p-6 space-y-5">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-            <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-            Project Details
-          </h2>
+          {currentStep === 2 && (
+            <motion.div key="s2" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="grid grid-cols-2 gap-5">
+              <div><label className="block text-sm font-medium text-slate-300 mb-1.5">Category</label><select value={formData.category} onChange={(e) => handleChange('category', e.target.value)} className="w-full px-4 py-2.5 bg-slate-800/60 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500 cursor-pointer">{PROJECT_CATEGORIES.map(c => <option key={c}>{c}</option>)}</select></div>
+              <div><label className="block text-sm font-medium text-slate-300 mb-1.5">Experience</label><select value={formData.experienceLevel} onChange={(e) => handleChange('experienceLevel', e.target.value)} className="w-full px-4 py-2.5 bg-slate-800/60 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500 cursor-pointer">{EXPERIENCE_LEVELS.map(e => <option key={e}>{e}</option>)}</select></div>
+              <div><label className="block text-sm font-medium text-slate-300 mb-1.5">Team Size</label><select value={formData.teamSize} onChange={(e) => handleChange('teamSize', e.target.value)} className="w-full px-4 py-2.5 bg-slate-800/60 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500 cursor-pointer">{TEAM_SIZES.map(s => <option key={s}>{s} people</option>)}</select></div>
+              <div><label className="block text-sm font-medium text-slate-300 mb-1.5">Duration</label><select value={formData.duration} onChange={(e) => handleChange('duration', e.target.value)} className="w-full px-4 py-2.5 bg-slate-800/60 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500 cursor-pointer">{PROJECT_DURATIONS.map(d => <option key={d}>{d}</option>)}</select></div>
+              <div className="col-span-2"><label className="block text-sm font-medium text-slate-300 mb-1.5">Status</label><select value={formData.status} onChange={(e) => handleChange('status', e.target.value)} className="w-full px-4 py-2.5 bg-slate-800/60 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500 cursor-pointer">{PROJECT_STATUSES.map(s => <option key={s}>{s}</option>)}</select></div>
+            </motion.div>
+          )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Category */}
-            <div>
-              <label className="block text-sm text-slate-400 mb-2">Category</label>
-              <select
-                value={formData.category}
-                onChange={(e) => handleChange('category', e.target.value)}
-                className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-              >
-                {PROJECT_CATEGORIES.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
+          {currentStep === 3 && (
+            <motion.div key="s3" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="space-y-4">
+              <p className="text-sm text-slate-400 mb-2">Optional: Add links to help collaborators</p>
+              <div><label className="block text-sm font-medium text-slate-300 mb-1.5 flex items-center gap-2"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>GitHub</label><input type="url" value={formData.githubUrl} onChange={(e) => handleChange('githubUrl', e.target.value)} placeholder="https://github.com/..." className="w-full px-4 py-2.5 bg-slate-800/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-all" /></div>
+              <div><label className="block text-sm font-medium text-slate-300 mb-1.5 flex items-center gap-2"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>Live Demo</label><input type="url" value={formData.liveUrl} onChange={(e) => handleChange('liveUrl', e.target.value)} placeholder="https://..." className="w-full px-4 py-2.5 bg-slate-800/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-all" /></div>
+              <div><label className="block text-sm font-medium text-slate-300 mb-1.5 flex items-center gap-2"><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M5.5 9.5l6.5-6.5 6.5 6.5-6.5 6.5-6.5-6.5zm0 5l6.5 6.5 6.5-6.5" /></svg>Figma</label><input type="url" value={formData.figmaUrl} onChange={(e) => handleChange('figmaUrl', e.target.value)} placeholder="https://figma.com/..." className="w-full px-4 py-2.5 bg-slate-800/60 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-all" /></div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
-            {/* Experience Level */}
-            <div>
-              <label className="block text-sm text-slate-400 mb-2">Experience Level</label>
-              <select
-                value={formData.experienceLevel}
-                onChange={(e) => handleChange('experienceLevel', e.target.value)}
-                className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-              >
-                {EXPERIENCE_LEVELS.map(exp => (
-                  <option key={exp} value={exp}>{exp}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Team Size */}
-            <div>
-              <label className="block text-sm text-slate-400 mb-2">Team Size</label>
-              <select
-                value={formData.teamSize}
-                onChange={(e) => handleChange('teamSize', e.target.value)}
-                className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-              >
-                {TEAM_SIZES.map(size => (
-                  <option key={size} value={size}>{size} people</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Duration */}
-            <div>
-              <label className="block text-sm text-slate-400 mb-2">Duration</label>
-              <select
-                value={formData.duration}
-                onChange={(e) => handleChange('duration', e.target.value)}
-                className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-              >
-                {PROJECT_DURATIONS.map(dur => (
-                  <option key={dur} value={dur}>{dur}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Status - Special highlight */}
-          <div>
-            <label className="block text-sm text-slate-400 mb-2">Project Status</label>
-            <select
-              value={formData.status}
-              onChange={(e) => handleChange('status', e.target.value)}
-              className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
-            >
-              {PROJECT_STATUSES.map(status => (
-                <option key={status} value={status}>{status}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Submit Button */}
-        <div className="flex items-center justify-end gap-4">
-          <Link 
-            href={`/projects/${id}`}
-            className="px-6 py-3 text-slate-400 hover:text-white transition-colors"
-          >
-            Cancel
-          </Link>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg font-medium text-white hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {isSubmitting ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                Saving...
-              </>
-            ) : (
-              <>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Save Changes
-              </>
-            )}
+      {/* Footer */}
+      <div className="flex items-center justify-between py-4">
+        {currentStep > 0 ? (
+          <button onClick={prevStep} className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-sm font-medium text-slate-300 hover:text-white transition-all flex items-center gap-1.5">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>Back
           </button>
-        </div>
-      </form>
-    </motion.div>
+        ) : (
+          <Link href={`/projects/${id}`} className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-sm font-medium text-slate-300 hover:text-white transition-all flex items-center gap-1.5">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>Cancel
+          </Link>
+        )}
+
+        {currentStep < 3 ? (
+          <button onClick={nextStep} className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg text-sm font-semibold text-white flex items-center gap-1.5 hover:opacity-90 hover:scale-[1.02] transition-all shadow-lg shadow-purple-500/20">
+            Next<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+          </button>
+        ) : (
+          <button onClick={handleSubmit} disabled={isSubmitting} className="px-6 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg text-sm font-semibold text-white flex items-center gap-1.5 hover:opacity-90 hover:scale-[1.02] transition-all shadow-lg shadow-green-500/20 disabled:opacity-50">
+            {isSubmitting ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>Saving...</> : <>Save Changes<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg></>}
+          </button>
+        )}
+      </div>
+    </div>
   )
 }
 
