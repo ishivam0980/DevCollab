@@ -52,6 +52,7 @@ const ProfilePage = () => {
   const backupData = useRef<ProfileData | null>(null)
   const [showSkillSelector, setShowSkillSelector] = useState(false)
   const skillSelectRef = useRef<HTMLSelectElement>(null)
+  const [isUploading, setIsUploading] = useState(false)
 
   const fetchProfileDetails = async () => {
     setLoading(true);
@@ -156,11 +157,14 @@ const ProfilePage = () => {
     const result = await updateProfile(formData)
     
     if (result.success) {
+      // Use the image URL returned from server for session update
+      const imageToUse = result.newImage || data.image
       await update({ 
         ...session, 
         user: { 
           ...session?.user, 
-          image: data.image 
+          image: imageToUse,
+          name: data.name  // Also update name in session
         } 
       })
       setIsEditing(false)
@@ -239,9 +243,9 @@ const ProfilePage = () => {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
       className="grid grid-cols-1 md:grid-cols-3 gap-8"
     >
       {/* LEFT SIDEBAR */}
@@ -251,15 +255,25 @@ const ProfilePage = () => {
           {/* Profile Picture */}
           <div className="flex flex-col items-center mb-6">
             <div className="relative group w-32 h-32">
-              <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-              <div className="relative w-full h-full rounded-full overflow-hidden bg-black border-2 border-black">
+              <div className="relative w-full h-full rounded-full overflow-hidden bg-black border-2 border-slate-700">
                 <img 
                   src={data.image || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(data.name)}`} 
                   alt="Profile" 
-                  className="w-full h-full object-cover"
+                  className={`w-full h-full object-cover transition-opacity ${isUploading ? 'opacity-30' : ''}`}
                 />
                 
-                {isEditing && (
+                {/* Uploading Spinner Overlay */}
+                {isUploading && (
+                  <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center">
+                    <div className="relative w-10 h-10">
+                      <div className="absolute inset-0 rounded-full border-2 border-white/20"></div>
+                      <div className="absolute inset-0 rounded-full border-t-2 border-purple-500 animate-spin"></div>
+                    </div>
+                    <span className="text-xs text-white font-medium mt-2">Uploading...</span>
+                  </div>
+                )}
+                
+                {isEditing && !isUploading && (
                   <>
                     <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center transition-opacity pointer-events-none">
                       <svg className="w-8 h-8 text-white mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -272,13 +286,18 @@ const ProfilePage = () => {
                     <div className="absolute inset-0 z-50 opacity-0 cursor-pointer">
                       <UploadButton
                         endpoint="profileImage"
+                        onUploadBegin={() => {
+                          setIsUploading(true)
+                        }}
                         onClientUploadComplete={(res) => {
+                          setIsUploading(false)
                           if (res && res[0]) {
                             // Update local state ONLY (Preview Mode)
                             setData(prev => ({ ...prev, image: res[0].url }));
                           }
                         }}
                         onUploadError={(error) => {
+                          setIsUploading(false)
                           alert(`Upload failed: ${error.message}`);
                         }}
                         appearance={{

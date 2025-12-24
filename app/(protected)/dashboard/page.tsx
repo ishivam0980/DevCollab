@@ -123,14 +123,14 @@ const DashboardPage = () => {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
       className="space-y-8"
     >
       {/* Welcome Section with Profile Completion */}
       <div className="glass-card rounded-2xl p-8 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-purple-600/20 to-blue-600/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-purple-600/10 to-blue-600/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
         <div className="relative">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
@@ -152,7 +152,7 @@ const DashboardPage = () => {
               </div>
               <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
                 <div 
-                  className={`h-full rounded-full transition-all duration-500 ${
+                  className={`h-full rounded-full ${
                     profileCompletion >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 
                     profileCompletion >= 50 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 
                     'bg-gradient-to-r from-red-500 to-pink-500'
@@ -293,12 +293,9 @@ const DashboardPage = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recommendedProjects.map((project, index) => (
-              <motion.div
+            {recommendedProjects.map((project) => (
+              <div
                 key={project._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
               >
                 <Link href={`/projects/${project._id}`}>
                   <div className="glass-card rounded-xl p-4 hover:border-purple-500/30 transition-all duration-300 h-full flex flex-col">
@@ -337,7 +334,7 @@ const DashboardPage = () => {
                     </div>
                   </div>
                 </Link>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}

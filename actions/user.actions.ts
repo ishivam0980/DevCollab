@@ -49,6 +49,7 @@ export type GetProfileResponse =
 export type ActionResponse = {
   success?: boolean;
   error?: string;
+  newImage?: string; // For profile image updates
 };
 
 // ============================================
@@ -136,6 +137,8 @@ export async function updateProfile(formData: FormData): Promise<ActionResponse>
     const oldImage = oldUser?.image;
 
     // Step 5: Update user document
+    const newImageUrl = (formData.get('image') as string) || oldImage || '';
+    
     await User.findOneAndUpdate(
       { email: currentUser.email },  // Find by email
       {
@@ -149,7 +152,7 @@ export async function updateProfile(formData: FormData): Promise<ActionResponse>
         leetcodeUrl: leetcodeUrl?.trim() || '',
         codechefUrl: codechefUrl?.trim() || '',
         codeforcesUrl: codeforcesUrl?.trim() || '',
-        image: (formData.get('image') as string) || undefined, // Allow updating image
+        image: newImageUrl,
       }
     );
 
@@ -171,7 +174,8 @@ export async function updateProfile(formData: FormData): Promise<ActionResponse>
       }
     }
     
-    return { success: true };
+    // Return success with new image URL for session update
+    return { success: true, newImage: newImageUrl };
   } catch (error) {
     console.error('Error updating profile:', error);
     return { error: 'Failed to update profile' };
