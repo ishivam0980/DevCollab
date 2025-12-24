@@ -1,16 +1,22 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
-import { createProject } from "@/actions/project.actions"
-import { TECH_SKILLS, EXPERIENCE_LEVELS, PROJECT_CATEGORIES, TEAM_SIZES, PROJECT_DURATIONS } from "@/lib/constants"
+import { useSession } from "next-auth/react"
+import { getProject, updateProject } from "@/actions/project.actions"
+import { TECH_SKILLS, EXPERIENCE_LEVELS, PROJECT_CATEGORIES, TEAM_SIZES, PROJECT_DURATIONS, PROJECT_STATUSES } from "@/lib/constants"
 import { motion } from "framer-motion"
 import Link from "next/link"
 
-const NewProjectPage = () => {
+const EditProjectPage = ({ params }: { params: Promise<{ id: string }> }) => {
+  const { id } = use(params)
   const router = useRouter()
+  const { data: session } = useSession()
+  
+  const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [notAuthorized, setNotAuthorized] = useState(false)
   
   // Form State
   const [formData, setFormData] = useState({
@@ -27,6 +33,44 @@ const NewProjectPage = () => {
 
   const [showTechDropdown, setShowTechDropdown] = useState(false)
   const [techSearch, setTechSearch] = useState('')
+
+  // Fetch existing project data
+  useEffect(() => {
+    fetchProject()
+  }, [id, session?.user?.email])
+
+  const fetchProject = async () => {
+    setLoading(true)
+    try {
+      const result = await getProject(id)
+      if (result.success && result.project) {
+        // Check if user is the owner
+        if (session?.user?.email && result.project.owner?.email !== session.user.email) {
+          setNotAuthorized(true)
+          return
+        }
+        
+        // Populate form with existing data
+        setFormData({
+          title: result.project.title || '',
+          description: result.project.description || '',
+          shortDescription: result.project.shortDescription || '',
+          techStack: result.project.techStack || [],
+          category: result.project.category || 'Web App',
+          experienceLevel: result.project.experienceLevel || 'Beginner',
+          teamSize: result.project.teamSize || '1-2',
+          duration: result.project.duration || '1-3 months',
+          status: result.project.status || 'Looking for collaborators'
+        })
+      } else {
+        setError(result.error || 'Project not found')
+      }
+    } catch (err) {
+      setError('Failed to load project')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Handle form input changes
   const handleChange = (field: string, value: string) => {
@@ -74,20 +118,71 @@ const NewProjectPage = () => {
         throw new Error('Please select at least one technology')
       }
 
-      const result = await createProject(formData)
+      const result = await updateProject(id, formData)
       
       if (result.error) {
         throw new Error(result.error)
       }
 
-      // Success! Redirect to the new project page
-      router.push(`/projects/${result.project._id}`)
+      // Success! Redirect to project page
+      router.push(`/projects/${id}`)
       
     } catch (err: any) {
-      setError(err.message || 'Failed to create project')
+      setError(err.message || 'Failed to update project')
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  // Loading State
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative w-16 h-16">
+            <div className="absolute inset-0 rounded-full border-t-2 border-purple-500 animate-spin"></div>
+            <div className="absolute inset-2 rounded-full border-r-2 border-pink-500 animate-spin [animation-direction:reverse]"></div>
+            <div className="absolute inset-4 rounded-full border-b-2 border-blue-500 animate-spin"></div>
+          </div>
+          <p className="text-slate-400 text-sm tracking-widest uppercase">Loading Project...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Not Authorized State
+  if (notAuthorized) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-center glass-card p-8 rounded-2xl border border-red-500/20 max-w-md">
+          <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
+            <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-white mb-2">Not Authorized</h2>
+          <p className="text-slate-400 mb-6">You can only edit projects that you own.</p>
+          <Link href="/browse" className="text-purple-400 hover:text-purple-300 transition-colors">
+            ← Back to Browse
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  // Error State
+  if (error && !formData.title) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-center glass-card p-8 rounded-2xl border border-red-500/20 max-w-md">
+          <h2 className="text-xl font-bold text-white mb-2">Error</h2>
+          <p className="text-slate-400 mb-6">{error}</p>
+          <Link href="/browse" className="text-purple-400 hover:text-purple-300 transition-colors">
+            ← Back to Browse
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -99,14 +194,14 @@ const NewProjectPage = () => {
     >
       {/* Page Header */}
       <div className="mb-8">
-        <Link href="/browse" className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4">
+        <Link href={`/projects/${id}`} className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Back to Browse
+          Back to Project
         </Link>
-        <h1 className="text-3xl font-bold text-white">Create New Project</h1>
-        <p className="text-slate-400 mt-2">Share your project idea and find collaborators</p>
+        <h1 className="text-3xl font-bold text-white">Edit Project</h1>
+        <p className="text-slate-400 mt-2">Update your project details</p>
       </div>
 
       {/* Error Message */}
@@ -152,7 +247,7 @@ const NewProjectPage = () => {
               type="text"
               value={formData.shortDescription}
               onChange={(e) => handleChange('shortDescription', e.target.value)}
-              placeholder="Brief one-line summary (shown in project cards)"
+              placeholder="Brief one-line summary"
               className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
               maxLength={100}
             />
@@ -166,7 +261,7 @@ const NewProjectPage = () => {
             <textarea
               value={formData.description}
               onChange={(e) => handleChange('description', e.target.value)}
-              placeholder="Describe your project in detail. What are you building? What problems does it solve? What's the current status?"
+              placeholder="Describe your project in detail..."
               rows={5}
               className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors resize-none"
             />
@@ -216,7 +311,6 @@ const NewProjectPage = () => {
               className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
             />
             
-            {/* Tech Dropdown */}
             {showTechDropdown && (
               <div className="absolute z-50 w-full mt-2 max-h-48 overflow-y-auto bg-slate-900 border border-slate-700 rounded-lg shadow-2xl">
                 {filteredTechSkills.map(tech => (
@@ -240,12 +334,8 @@ const NewProjectPage = () => {
             )}
           </div>
 
-          {/* Click outside to close dropdown */}
           {showTechDropdown && (
-            <div 
-              className="fixed inset-0 z-40" 
-              onClick={() => setShowTechDropdown(false)}
-            />
+            <div className="fixed inset-0 z-40" onClick={() => setShowTechDropdown(false)} />
           )}
         </div>
 
@@ -275,7 +365,7 @@ const NewProjectPage = () => {
 
             {/* Experience Level */}
             <div>
-              <label className="block text-sm text-slate-400 mb-2">Experience Level Required</label>
+              <label className="block text-sm text-slate-400 mb-2">Experience Level</label>
               <select
                 value={formData.experienceLevel}
                 onChange={(e) => handleChange('experienceLevel', e.target.value)}
@@ -289,7 +379,7 @@ const NewProjectPage = () => {
 
             {/* Team Size */}
             <div>
-              <label className="block text-sm text-slate-400 mb-2">Team Size Needed</label>
+              <label className="block text-sm text-slate-400 mb-2">Team Size</label>
               <select
                 value={formData.teamSize}
                 onChange={(e) => handleChange('teamSize', e.target.value)}
@@ -303,7 +393,7 @@ const NewProjectPage = () => {
 
             {/* Duration */}
             <div>
-              <label className="block text-sm text-slate-400 mb-2">Expected Duration</label>
+              <label className="block text-sm text-slate-400 mb-2">Duration</label>
               <select
                 value={formData.duration}
                 onChange={(e) => handleChange('duration', e.target.value)}
@@ -315,12 +405,26 @@ const NewProjectPage = () => {
               </select>
             </div>
           </div>
+
+          {/* Status - Special highlight */}
+          <div>
+            <label className="block text-sm text-slate-400 mb-2">Project Status</label>
+            <select
+              value={formData.status}
+              onChange={(e) => handleChange('status', e.target.value)}
+              className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+            >
+              {PROJECT_STATUSES.map(status => (
+                <option key={status} value={status}>{status}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Submit Button */}
         <div className="flex items-center justify-end gap-4">
           <Link 
-            href="/browse"
+            href={`/projects/${id}`}
             className="px-6 py-3 text-slate-400 hover:text-white transition-colors"
           >
             Cancel
@@ -333,14 +437,14 @@ const NewProjectPage = () => {
             {isSubmitting ? (
               <>
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                Creating...
+                Saving...
               </>
             ) : (
               <>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                Create Project
+                Save Changes
               </>
             )}
           </button>
@@ -350,4 +454,4 @@ const NewProjectPage = () => {
   )
 }
 
-export default NewProjectPage
+export default EditProjectPage

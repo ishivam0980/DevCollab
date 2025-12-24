@@ -22,3 +22,11 @@ export const TECH_SKILLS = [
 ];
 
 export const EXPERIENCE_LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
+
+export const PROJECT_CATEGORIES = ['Web App', 'Mobile App', 'AI/ML', 'Game', 'DevTools', 'Other'];
+
+export const TEAM_SIZES = ['1-2', '3-5', '5+'];
+
+export const PROJECT_DURATIONS = ['< 1 month', '1-3 months', '3-6 months', '6+ months'];
+
+export const PROJECT_STATUSES = ['Looking for collaborators', 'In Progress', 'Completed'];

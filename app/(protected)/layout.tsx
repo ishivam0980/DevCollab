@@ -39,6 +39,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   const navLinks = [
     { href: '/dashboard', label: 'Dashboard' },
     { href: '/browse', label: 'Browse' },
+    { href: '/my-projects', label: 'My Projects' },
     { href: '/my-interests', label: 'My Interests' },
   ];
 
@@ -54,9 +55,9 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-500/20 rounded-full blur-[100px] animate-blob animation-delay-4000" />
       </div>
 
-      {/* Navbar */}
-      <div className="sticky top-4 z-50 px-4 sm:px-6 flex justify-center mb-8">
-        <nav className="w-full max-w-5xl bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-purple-500/10">
+      {/* Navbar - Fixed position with high z-index */}
+      <div className="fixed top-4 left-0 right-0 z-50 px-4 sm:px-6 flex justify-center">
+        <nav className="w-full max-w-5xl bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-purple-500/10">
           <div className="px-4 sm:px-6">
             <div className="h-16 flex items-center justify-between">
               {/* Logo */}
@@ -131,11 +132,21 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
                 {/* Sign Out Button */}
                 <button
                   onClick={() => signOut({ callbackUrl: '/sign-in' })}
-                  className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
+                  className="group p-2 rounded-xl transition-all duration-300 hover:bg-gradient-to-r hover:from-red-500/20 hover:to-orange-500/20 border border-transparent hover:border-red-500/30"
                   title="Sign Out"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  <svg 
+                    className="w-5 h-5 text-slate-400 group-hover:text-red-400 transition-colors" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M5.636 5.636a9 9 0 1012.728 0M12 3v9" 
+                    />
                   </svg>
                 </button>
 
@@ -189,8 +200,8 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
         </nav>
       </div>
       
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 relative z-10">{children}</main>
+      {/* Main Content - pt-24 accounts for fixed navbar */}
+      <main className="max-w-7xl mx-auto pt-24 pb-6 px-4 sm:px-6 relative z-10">{children}</main>
     </div>
   );
 }
