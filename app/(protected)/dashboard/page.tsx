@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { getMyProjects, getMyInterests } from "@/actions/interest.actions"
 import { getMatchedProjects } from "@/actions/project.actions"
+import { getProfileCompletion } from "@/actions/user.actions"
 import { motion } from "framer-motion"
 import Link from "next/link"
 
@@ -43,6 +44,10 @@ const DashboardPage = () => {
     projectsInterested: 0
   })
   const [recommendedProjects, setRecommendedProjects] = useState<Project[]>([])
+  
+  // Profile completion state
+  const [profileCompletion, setProfileCompletion] = useState(0)
+  const [missingFields, setMissingFields] = useState<string[]>([])
 
   useEffect(() => {
     fetchDashboardData()
@@ -52,11 +57,18 @@ const DashboardPage = () => {
     setLoading(true)
     try {
       // Fetch all data in parallel
-      const [myProjectsResult, myInterestsResult, matchedResult] = await Promise.all([
+      const [myProjectsResult, myInterestsResult, matchedResult, profileResult] = await Promise.all([
         getMyProjects(),
         getMyInterests(),
-        getMatchedProjects(5)
+        getMatchedProjects(5),
+        getProfileCompletion()
       ])
+      
+      // Profile completion
+      if (profileResult.success) {
+        setProfileCompletion(profileResult.percentage || 0)
+        setMissingFields(profileResult.missingFields || [])
+      }
 
       // Calculate stats
       if (myProjectsResult.success && myProjectsResult.projects) {
@@ -116,16 +128,48 @@ const DashboardPage = () => {
       transition={{ duration: 0.5 }}
       className="space-y-8"
     >
-      {/* Welcome Section */}
+      {/* Welcome Section with Profile Completion */}
       <div className="glass-card rounded-2xl p-8 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-purple-600/20 to-blue-600/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
         <div className="relative">
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-            Welcome back, {session?.user?.name?.split(' ')[0] || 'Developer'}! 👋
-          </h1>
-          <p className="text-slate-400 text-lg">
-            Find your next collaboration or share your project ideas
-          </p>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                Welcome back, {session?.user?.name?.split(' ')[0] || 'Developer'}! 👋
+              </h1>
+              <p className="text-slate-400 text-lg">
+                Find your next collaboration or share your project ideas
+              </p>
+            </div>
+            
+            {/* Profile Completion */}
+            <div className="md:min-w-[200px]">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-slate-400">Profile</span>
+                <span className={`text-sm font-medium ${profileCompletion >= 80 ? 'text-green-400' : profileCompletion >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>
+                  {profileCompletion}%
+                </span>
+              </div>
+              <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    profileCompletion >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-500' : 
+                    profileCompletion >= 50 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 
+                    'bg-gradient-to-r from-red-500 to-pink-500'
+                  }`}
+                  style={{ width: `${profileCompletion}%` }}
+                ></div>
+              </div>
+              {profileCompletion < 80 && (
+                <Link 
+                  href="/profile" 
+                  className="text-xs text-purple-400 hover:text-purple-300 mt-2 inline-block"
+                >
+                  Complete profile for better matches →
+                </Link>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 

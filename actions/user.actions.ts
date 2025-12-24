@@ -201,3 +201,50 @@ export async function deleteProfile(): Promise<ActionResponse> {
     return { error: 'Failed to delete account' };
   }
 }
+
+// ============================================
+// GET PROFILE COMPLETION %
+// ============================================
+export const getProfileCompletion = async () => {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return { success: false, error: 'Not authenticated' };
+    }
+
+    await connectDB();
+    const user = await User.findOne({ email: currentUser.email });
+    if (!user) {
+      return { success: false, error: 'User not found' };
+    }
+
+    // Define required fields and their weights
+    const fields = [
+      { name: 'name', weight: 15, filled: !!(user.name && user.name.trim()) },
+      { name: 'bio', weight: 20, filled: !!(user.bio && user.bio.trim()) },
+      { name: 'skills', weight: 25, filled: !!(user.skills && user.skills.length > 0) },
+      { name: 'experienceLevel', weight: 15, filled: !!(user.experienceLevel) },
+      { name: 'location', weight: 10, filled: !!(user.location && user.location.trim()) },
+      { name: 'githubUrl', weight: 10, filled: !!(user.githubUrl && user.githubUrl.trim()) },
+      { name: 'image', weight: 5, filled: !!(user.image && user.image.trim()) },
+    ];
+
+    // Calculate completion percentage
+    const totalWeight = fields.reduce((sum, f) => sum + f.weight, 0);
+    const filledWeight = fields.filter(f => f.filled).reduce((sum, f) => sum + f.weight, 0);
+    const percentage = Math.round((filledWeight / totalWeight) * 100);
+
+    // Get missing fields
+    const missingFields = fields.filter(f => !f.filled).map(f => f.name);
+
+    return {
+      success: true,
+      percentage,
+      missingFields,
+      isComplete: percentage >= 80
+    };
+  } catch (error) {
+    console.error('Profile completion error:', error);
+    return { success: false, error: 'Failed to calculate completion' };
+  }
+}
