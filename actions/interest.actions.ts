@@ -4,6 +4,7 @@ import connectDB from "@/lib/mongodb";
 import Interest from "@/models/Interest";
 import Project from "@/models/Project";
 import User from "@/models/User";
+import { createNotification } from "./notification.actions";
 
 // ============================================
 // TOGGLE INTEREST (Show or Withdraw Interest)
@@ -67,6 +68,15 @@ export const toggleInterest = async(projectId: string) => {
             await Project.findByIdAndUpdate(projectId, {
                 $inc: { interestCount: 1 }
             });
+            
+            // Send notification to project owner
+            await createNotification(
+                project.owner.toString(),
+                user._id.toString(),
+                'interest',
+                `${user.name} is interested in your project "${project.title}"`,
+                projectId
+            );
             
             return { success: true, interested: true };
         }

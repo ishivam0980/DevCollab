@@ -150,7 +150,6 @@ const DashboardPage = () => {
                 Find your next collaboration or share your project ideas
               </p>
             </div>
-            
             {/* Profile Completion - Enhanced */}
             <div className="md:min-w-[220px] glass-card rounded-xl p-4 border border-white/5">
               <div className="flex items-center justify-between mb-2">

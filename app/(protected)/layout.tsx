@@ -3,6 +3,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { getUnreadCount } from '@/actions/notification.actions';
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
@@ -10,6 +11,19 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+  // Fetch unread notifications count
+  useEffect(() => {
+    const fetchUnread = async () => {
+      const result = await getUnreadCount();
+      setUnreadNotifications(result.count);
+    };
+    fetchUnread();
+    // Poll every 30 seconds
+    const interval = setInterval(fetchUnread, 30000);
+    return () => clearInterval(interval);
+  }, [pathname]);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -80,6 +94,15 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
       )
     },
     { 
+      href: '/notifications', 
+      label: 'Notifications',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+      )
+    },
+    { 
       href: '/projects/new', 
       label: 'New Project',
       icon: (
@@ -125,32 +148,56 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
 
         {/* Nav Links */}
         <nav className={`flex-1 py-3 space-y-0.5 ${sidebarExpanded ? 'px-2' : 'px-1'}`}>
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`flex items-center gap-3 px-2 py-2 rounded-lg transition-all duration-200 group relative ${
-                isActiveLink(link.href)
-                  ? 'bg-purple-500/20 text-purple-400'
-                  : 'text-slate-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <div className="flex-shrink-0">
-                {link.icon}
-              </div>
-              <span className={`whitespace-nowrap transition-opacity duration-300 ${
-                sidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'
-              }`}>
-                {link.label}
-              </span>
-              {/* Tooltip when collapsed */}
-              {!sidebarExpanded && (
-                <div className="absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 transition-opacity">
-                  {link.label}
+          {navLinks.map((link) => {
+            const isNotifications = link.href === '/notifications';
+            const hasUnread = isNotifications && unreadNotifications > 0;
+            
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`flex items-center gap-3 px-2 py-2 rounded-lg transition-all duration-200 group relative ${
+                  isActiveLink(link.href)
+                    ? 'bg-purple-500/20 text-purple-400'
+                    : hasUnread
+                      ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <div className={`flex-shrink-0 relative ${hasUnread ? 'text-red-400' : ''}`}>
+                  {link.icon}
+                  {/* Unread badge on icon */}
+                  {hasUnread && !sidebarExpanded && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                      {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                    </span>
+                  )}
                 </div>
-              )}
-            </Link>
-          ))}
+                <span className={`whitespace-nowrap transition-opacity duration-300 ${
+                  sidebarExpanded ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'
+                }`}>
+                  {link.label}
+                  {/* Unread badge next to label */}
+                  {hasUnread && sidebarExpanded && (
+                    <span className="ml-2 px-1.5 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">
+                      {unreadNotifications}
+                    </span>
+                  )}
+                </span>
+                {/* Tooltip when collapsed */}
+                {!sidebarExpanded && (
+                  <div className="absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 transition-opacity">
+                    {link.label}
+                    {hasUnread && (
+                      <span className="ml-2 px-1.5 py-0.5 bg-red-500 text-white text-xs rounded-full">
+                        {unreadNotifications}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Bottom Section - Profile & Logout */}
