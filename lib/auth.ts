@@ -5,7 +5,9 @@ import GitHubProvider from 'next-auth/providers/github';
 import bcrypt from 'bcryptjs';
 import connectDB from './mongodb';
 import User from '@/models/User';
+
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: 'jwt', maxAge: 30 * 24 * 60 * 60 },
   providers: [
     CredentialsProvider({
