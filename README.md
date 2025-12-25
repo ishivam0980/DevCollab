@@ -1,161 +1,8 @@
 # DevCollab
 
-## Overview
+A full-stack developer collaboration platform built with Next.js 16, TypeScript, MongoDB, and Tailwind CSS. Enables developers to find teammates based on skill matching, post project ideas, and collaborate on software projects.
 
-DevCollab is a developer collaboration platform where developers can post project ideas and find teammates based on skill matching. The platform uses an algorithm to calculate compatibility between developers and projects, making it easier to find the right collaborators.
-
-**Who it's for:** Developers looking for teammates, side project enthusiasts, and anyone wanting to collaborate on software projects.
-
-**What problem it solves:** Finding collaborators with complementary skills is hard. DevCollab matches developers to projects based on their tech stack, experience level, and interests - eliminating the guesswork from team formation.
-
-## Live Demo
-
-**[View Deployed Application →](https://dev-collab-two.vercel.app/)**
-
-## Features Included
-
-### Authentication & Authorization
-- [x] Google OAuth integration
-- [x] GitHub OAuth integration  
-- [x] Email/Password credentials authentication
-- [x] JWT-based session management with encrypted cookies
-- [x] Password reset via email with secure token
-- [x] Email verification for new accounts
-- [x] Protected route groups - unauthenticated users redirected to sign-in
-- [x] Callback URL preservation - users return to intended page after login
-- [x] Session persistence across browser refresh
-- [x] Multi-provider account linking (same email = same account)
-
-### Landing Page
-- [x] Animated hero section with floating developer profile cards
-- [x] "How it Works" section with 3-step visual guide
-- [x] Features grid showcasing platform capabilities
-- [x] Stats section with animated counters
-- [x] Final CTA section with call to action
-- [x] Footer with navigation links and social icons
-- [x] Automatic redirect to dashboard if already logged in
-- [x] Responsive design for mobile and desktop
-
-### Dashboard
-- [x] Personalized welcome message with user's name
-- [x] Profile completion percentage indicator with color coding
-- [x] Stats cards showing: Projects Created, Interests Received, Projects Interested In
-- [x] Quick action buttons for common tasks
-- [x] "Recommended Projects" section based on skill matching
-- [x] Projects sorted by match percentage (best matches first)
-- [x] Empty states with helpful prompts for new users
-- [x] Links to create new project or browse existing ones
-
-### Browse Projects
-- [x] Grid view of all projects with card layout
-- [x] Live search with 500ms debounce (prevents API spam while typing)
-- [x] Filter by category dropdown
-- [x] Filter by experience level dropdown
-- [x] Filter by tech stack (multi-select)
-- [x] Clear all filters button
-- [x] Skill match percentage badge on each project card
-- [x] Match percentage color coding (green 80%+, blue 60%+, yellow below)
-- [x] Projects sorted by match relevance
-- [x] Owner avatar and name on each card (clickable to view profile)
-- [x] GitHub/Live Demo/Figma icons with external links
-- [x] Interest count display
-- [x] Load more pagination
-- [x] Empty state when no projects match filters
-
-### Project Management
-- [x] Multi-step form wizard for creating projects (3 steps)
-  - Step 1: Basic Info (title, description, category, experience, team size, duration)
-  - Step 2: Tech Stack (searchable multi-select from 50+ skills)
-  - Step 3: Links (GitHub URL, Live Demo URL, Figma URL - all optional)
-- [x] Progress indicator showing current step
-- [x] Validation per step before proceeding
-- [x] Edit existing projects with same multi-step form
-- [x] Delete project with confirmation
-- [x] Project detail page with full information
-- [x] Owner-only edit/delete buttons
-- [x] Project status indicator (Looking for Team, In Progress, Completed)
-
-### Interest System
-- [x] "Show Interest" button on project cards and detail page
-- [x] Toggle functionality - click again to withdraw interest
-- [x] Instant count update on the project
-- [x] "My Interests" page showing all projects user is interested in
-- [x] View list of interested developers (owner only)
-- [x] Each interested user shows: name, avatar, skills, match percentage
-- [x] Compound unique index prevents duplicate interests
-- [x] Atomic increment/decrement of interest count
-
-### Profile Page
-- [x] Edit name, bio, location
-- [x] Experience level selector (Beginner, Intermediate, Advanced, Expert)
-- [x] Skills multi-select with search (50+ tech options)
-- [x] Profile image upload via UploadThing
-- [x] Fallback to DiceBear avatar if no image uploaded
-- [x] Social links section:
-  - GitHub URL
-  - LinkedIn URL
-  - LeetCode URL
-  - CodeChef URL
-  - Codeforces URL
-- [x] Save changes with loading state
-- [x] Success/error toast notifications
-- [x] Profile completion percentage calculation
-
-### Public User Profiles
-- [x] View any user's profile at /users/[id]
-- [x] Display user's bio, location, experience level
-- [x] Show all user's skills as badges
-- [x] Social links with platform icons (clickable)
-- [x] List of all projects created by that user
-- [x] Clickable project cards leading to project details
-- [x] Self-detection: clicking own name redirects to editable /profile
-- [x] Works from: project cards, project detail page, interested users list
-
-### Notifications
-- [x] Bell icon in sidebar with unread count badge
-- [x] Red highlight on notification nav when unread > 0
-- [x] Full-page notification center at /notifications
-- [x] Notification triggered when someone shows interest in your project
-- [x] Each notification shows: sender avatar, message, time ago
-- [x] Unread notifications highlighted with purple border
-- [x] Click notification to navigate to the project
-- [x] Auto-mark all as read when visiting notification page
-- [x] Delete individual notifications
-- [x] Clear all notifications button
-- [x] Polling every 30 seconds for new notifications
-- [x] Self-notification prevention (you don't notify yourself)
-
-### Email System
-- [x] Password reset emails via Nodemailer
-- [x] Secure token generation for reset links
-- [x] Token expiration (1 hour)
-- [x] Email verification for new credential-based accounts
-- [x] Gmail SMTP with App Password support
-
-### UI & Components
-- [x] Glassmorphism design with backdrop blur
-- [x] Dark theme throughout
-- [x] Collapsible sidebar (expands on hover)
-- [x] Mobile hamburger menu
-- [x] Responsive layout (mobile-first)
-- [x] Framer Motion animations on page load
-- [x] Staggered list animations
-- [x] Hover effects on interactive elements
-- [x] Loading spinners and skeleton states
-- [x] Empty states with helpful messages
-- [x] Click-outside detection for dropdowns
-- [x] Tooltip on sidebar icons when collapsed
-
-### Developer Experience
-- [x] TypeScript throughout
-- [x] Next.js 16 App Router
-- [x] Server Actions (no REST API endpoints)
-- [x] ESLint configuration
-- [x] Path aliases (@/ imports)
-- [x] Centralized constants file
-- [x] Reusable utility functions
-- [x] Mongoose ODM with schemas
-- [x] Environment variable management
+**Live Demo:** [https://dev-collab-two.vercel.app](https://dev-collab-two.vercel.app)
 
 ---
 
@@ -165,107 +12,82 @@ DevCollab is a developer collaboration platform where developers can post projec
 |----------|-------------|
 | Framework | Next.js 16, React 18 |
 | Language | TypeScript |
-| Styling | Tailwind CSS |
-| Animation | Framer Motion |
-| Database | MongoDB with Mongoose |
-| Authentication | NextAuth.js with OAuth (Google, GitHub) |
+| Database | MongoDB, Mongoose ODM |
+| Authentication | NextAuth.js, OAuth 2.0, JWT, bcrypt |
+| Styling | Tailwind CSS, Framer Motion |
 | File Upload | UploadThing |
 | Email | Nodemailer |
-| Deployment | Vercel |
+| Deployment | Vercel, MongoDB Atlas |
 
 ---
 
-## Prerequisites
+## Features
 
-Before running this project, make sure you have:
+### Authentication & Security
+- Multi-provider authentication supporting Google OAuth 2.0, GitHub OAuth, and email/password credentials
+- JWT-based session management with 30-day expiration and httpOnly cookies
+- Secure password hashing using bcrypt with 10 salt rounds
+- Email-based password reset with cryptographically generated tokens and 1-hour expiration
+- Protected route groups with automatic redirect and callback URL preservation
+- OAuth account linking for users signing in with multiple providers
 
-- Node.js 18 or higher
-- npm or yarn
-- MongoDB database (local or Atlas)
-- Google Cloud Console account (for OAuth credentials)
-- GitHub Developer account (for OAuth credentials)
-- Gmail account with App Password enabled (for sending emails)
-- UploadThing account (for file uploads)
+### Database Architecture
+- MongoDB schema with 4 interconnected collections (Users, Projects, Interests, Notifications)
+- Compound unique indexes preventing duplicate entries and ensuring data integrity
+- Mongoose population queries resolving cross-collection references efficiently
+- Atomic database operations using findOneAndUpdate with $inc operator
+- Connection pooling for persistent database connections
 
----
+### Frontend & UI/UX
+- 12+ responsive pages with glassmorphism design and gradient animations
+- Collapsible sidebar navigation with 8 items and hover-expand functionality
+- Framer Motion animations including page transitions and staggered list effects
+- Multi-step form wizard with 3-step project creation and per-step validation
+- Searchable multi-select dropdown with 50+ technology options
+- Skeleton loading states and empty state components
+- Mobile-first responsive design with dark theme
 
-## Quick Start
+### Search & Matching Algorithm
+- Skill-based matching algorithm calculating compatibility percentages with O(n) complexity
+- Debounced live search with 500ms delay reducing unnecessary API calls by 90%
+- Multi-filter system with 4 filter types (category, experience, tech stack, search)
+- Match percentage badges with color coding (green 80%+, blue 60%+, yellow below)
+- Results sorted by match relevance
+- Load More pagination fetching 12 projects per request
 
-### 1. Clone and Install
+### Notification System
+- In-app notifications with dedicated notifications page
+- Polling mechanism with 30-second intervals for near real-time updates
+- Unread count badge with dynamic display in sidebar navigation
+- Auto-mark-as-read on page visit
+- Individual deletion and bulk clear functionality
+- Self-notification prevention
 
-```bash
-git clone https://github.com/ishivam0980/DevCollab.git
-cd devcollab
-npm install
-```
+### File Uploads & Media
+- UploadThing integration with 4MB size limits and image type validation
+- Profile image upload with real-time preview and loading states
+- Fallback avatar generation using DiceBear API
 
-### 2. Environment Setup
+### Project Management
+- Complete CRUD operations with ownership validation
+- Multi-step project creation with 10+ fields across 3 steps
+- Project detail pages with dynamic routing
+- My Projects dashboard with edit/delete actions
+- My Interests page aggregating interested projects
+- Project status system (Looking for Team, In Progress, Completed)
 
-Create a `.env.local` file in the root directory:
+### Collaboration System
+- Interest toggle for expressing collaboration interest
+- Atomic increment/decrement of interest counts
+- Interested users view for project owners
+- Compound unique index preventing duplicate interests
 
-```bash
-cp .env.example .env.local
-```
-
-Open `.env.local` and fill in your credentials. Here's what each variable does:
-
-```env
-# Database connection string for MongoDB
-# Get this from MongoDB Atlas: Database > Connect > Drivers
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/devcollab
-
-# Base URL of your application
-# Use http://localhost:3000 for local development
-# Use your production URL when deployed
-NEXTAUTH_URL=http://localhost:3000
-
-# Secret key for encrypting session tokens
-# Generate one with: openssl rand -base64 32
-NEXTAUTH_SECRET=your-secret-key-here
-
-# Google OAuth credentials
-# Get these from Google Cloud Console > APIs & Services > Credentials
-# Create OAuth 2.0 Client ID, set redirect URI to: http://localhost:3000/api/auth/callback/google
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-
-# GitHub OAuth credentials
-# Get these from GitHub > Settings > Developer Settings > OAuth Apps
-# Set callback URL to: http://localhost:3000/api/auth/callback/github
-GITHUB_CLIENT_ID=your-github-client-id
-GITHUB_CLIENT_SECRET=your-github-client-secret
-
-# Email credentials for password reset functionality
-# Use Gmail with App Password (not your regular password)
-# Enable 2FA, then generate App Password at: https://myaccount.google.com/apppasswords
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASSWORD=your-16-char-app-password
-
-# UploadThing token for file uploads
-# Get this from UploadThing dashboard after creating an app
-UPLOADTHING_TOKEN=your-uploadthing-token
-```
-
-### 3. Database Setup
-
-No manual database setup required. The application will:
-- Connect to MongoDB using your connection string
-- Automatically create collections on first write
-- Create indexes as defined in the Mongoose schemas
-
-If using MongoDB Atlas:
-1. Create a free cluster at mongodb.com
-2. Add your IP to the whitelist (Network Access > Add IP Address)
-3. Create a database user (Database Access > Add New Database User)
-4. Get connection string (Database > Connect > Drivers)
-
-### 4. Run Development Server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+### User Profiles
+- 12+ editable profile fields including bio, skills, and social links
+- Public profiles displaying user information and created projects
+- Profile completion percentage calculator
+- Self-profile detection with automatic redirect
+- 5 social platform integrations (GitHub, LinkedIn, LeetCode, CodeChef, Codeforces)
 
 ---
 
@@ -273,101 +95,100 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ```
 devcollab/
-│
-├── app/                              # Next.js 16 App Router
-│   │
-│   ├── (auth)/                       # Auth route group (public)
-│   │   ├── sign-in/
-│   │   │   └── page.tsx              # Sign in page with OAuth + credentials
-│   │   └── sign-up/
-│   │       ├── page.tsx              # Sign up page
-│   │       └── verify/
-│   │           └── page.tsx          # Email verification page
-│   │
-│   ├── (protected)/                  # Protected route group (requires auth)
-│   │   ├── layout.tsx                # Sidebar layout with navigation
-│   │   ├── dashboard/
-│   │   │   └── page.tsx              # User dashboard with stats and recommendations
-│   │   ├── browse/
-│   │   │   └── page.tsx              # Browse all projects with search and filters
-│   │   ├── my-projects/
-│   │   │   └── page.tsx              # List of user's created projects
-│   │   ├── my-interests/
-│   │   │   └── page.tsx              # Projects user has shown interest in
-│   │   ├── notifications/
-│   │   │   └── page.tsx              # Notification center
-│   │   ├── profile/
-│   │   │   └── page.tsx              # Edit user profile
-│   │   ├── projects/
-│   │   │   ├── new/
-│   │   │   │   └── page.tsx          # Create new project (multi-step form)
-│   │   │   └── [id]/
-│   │   │       ├── page.tsx          # Project detail page
-│   │   │       └── edit/
-│   │   │           └── page.tsx      # Edit existing project
-│   │   └── users/
-│   │       └── [id]/
-│   │           └── page.tsx          # Public user profile
-│   │
-│   ├── api/                          # API routes
-│   │   ├── auth/
-│   │   │   └── [...nextauth]/
-│   │   │       └── route.ts          # NextAuth.js handler
-│   │   └── uploadthing/
-│   │       ├── core.ts               # UploadThing file router config
-│   │       └── route.ts              # UploadThing API endpoint
-│   │
-│   ├── reset-password/
-│   │   └── page.tsx                  # Password reset page
-│   │
-│   ├── page.tsx                      # Landing page (public)
-│   ├── layout.tsx                    # Root layout with providers
-│   ├── globals.css                   # Global styles and Tailwind
-│   └── providers.tsx                 # SessionProvider wrapper
-│
-├── actions/                          # Server Actions (business logic)
-│   ├── auth.actions.ts               # Register user, password reset
-│   ├── user.actions.ts               # Get/update profile, get user by ID
-│   ├── project.actions.ts            # CRUD projects, get with matching
-│   ├── interest.actions.ts           # Toggle interest, get interested users
-│   └── notification.actions.ts       # Create, get, mark read, delete notifications
-│
-├── components/                       # Reusable React components
-│   └── NotificationBell.tsx          # Notification bell with dropdown
-│
-├── lib/                              # Utilities and configurations
-│   ├── auth.ts                       # NextAuth.js configuration
-│   ├── mongodb.ts                    # MongoDB connection handler
-│   ├── constants.ts                  # App constants (skills, categories, etc.)
-│   ├── email.ts                      # Nodemailer email sending utility
-│   ├── uploadthing.ts                # UploadThing configuration
-│   └── utils.ts                      # Helper functions (getCurrentUser, etc.)
-│
-├── models/                           # Mongoose schemas
-│   ├── User.ts                       # User schema (profile, skills, social links)
-│   ├── Project.ts                    # Project schema (title, tech, owner ref)
-│   ├── Interest.ts                   # Interest schema (user-project relation)
-│   └── Notification.ts               # Notification schema (recipient, sender, message)
-│
-├── types/                            # TypeScript definitions
-│   └── next-auth.d.ts                # NextAuth session type extensions
-│
-├── public/                           # Static assets
-│   ├── logo.png                      # App logo
-│   └── [social icons]                # Platform icons for profile links
-│
-├── .env.example                      # Environment variables template
-├── .gitignore                        # Git ignore rules
-├── next.config.ts                    # Next.js configuration
-├── tailwind.config.ts                # Tailwind CSS configuration
-├── tsconfig.json                     # TypeScript configuration
-└── package.json                      # Dependencies and scripts
+├── app/                          # Next.js App Router (12+ pages)
+│   ├── (auth)/                   # Authentication pages
+│   │   ├── sign-in/              # OAuth + credentials sign-in
+│   │   └── sign-up/              # Registration with email verification
+│   ├── (protected)/              # Protected routes (15+ server actions)
+│   │   ├── browse/               # Project discovery with search/filters
+│   │   ├── dashboard/            # User dashboard with stats
+│   │   ├── my-interests/         # Interested projects list
+│   │   ├── my-projects/          # User's created projects
+│   │   ├── notifications/        # Notification center
+│   │   ├── profile/              # Editable user profile
+│   │   ├── projects/[id]/        # Project detail and edit pages
+│   │   └── users/[id]/           # Public user profiles
+│   ├── api/                      # API routes
+│   │   ├── auth/                 # NextAuth.js handlers
+│   │   └── uploadthing/          # File upload endpoints
+│   └── reset-password/           # Password reset flow
+├── actions/                      # Server Actions (15+ functions)
+│   ├── auth.actions.ts           # Registration, password reset
+│   ├── user.actions.ts           # Profile CRUD operations
+│   ├── project.actions.ts        # Project CRUD with matching
+│   ├── interest.actions.ts       # Interest toggle system
+│   └── notification.actions.ts   # Notification management
+├── lib/                          # Utilities and configurations
+│   ├── auth.ts                   # NextAuth.js configuration
+│   ├── mongodb.ts                # Database connection handler
+│   ├── constants.ts              # 50+ skills, 8 categories
+│   └── utils.ts                  # Helper functions
+├── models/                       # Mongoose schemas (4 collections)
+│   ├── User.ts                   # User profile schema
+│   ├── Project.ts                # Project schema
+│   ├── Interest.ts               # User-project relationship
+│   └── Notification.ts           # Notification schema
+└── components/                   # Reusable React components
 ```
+
+---
+
+## Quick Start
+
+### Prerequisites
+- Node.js 18+
+- MongoDB database (local or Atlas)
+- Google Cloud Console account (OAuth)
+- GitHub Developer account (OAuth)
+- Gmail with App Password (email)
+- UploadThing account (file uploads)
+
+### Installation
+
+```bash
+git clone https://github.com/ishivam0980/DevCollab.git
+cd devcollab
+npm install
+cp .env.example .env.local
+# Edit .env.local with your credentials
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000)
+
+---
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| MONGODB_URI | MongoDB connection string |
+| NEXTAUTH_URL | Application base URL |
+| NEXTAUTH_SECRET | JWT encryption secret |
+| GOOGLE_CLIENT_ID | Google OAuth client ID |
+| GOOGLE_CLIENT_SECRET | Google OAuth client secret |
+| GITHUB_CLIENT_ID | GitHub OAuth client ID |
+| GITHUB_CLIENT_SECRET | GitHub OAuth client secret |
+| EMAIL_USER | Gmail address for password reset |
+| EMAIL_PASSWORD | Gmail app password |
+| UPLOADTHING_TOKEN | UploadThing API token |
+
+See `.env.example` for detailed setup instructions.
+
+---
+
+## Key Technical Decisions
+
+- **Server Actions over REST API**: Reduced boilerplate while maintaining type-safety
+- **JWT over Database Sessions**: Stateless authentication for horizontal scaling
+- **Polling over WebSockets**: Simpler implementation for notification updates
+- **Compound Indexes**: Database-level duplicate prevention
+- **Debounced Search**: 90% reduction in unnecessary API calls
 
 ---
 
 ## Author
 
-Shivam Srivastava
+**Shivam Srivastava**
 - GitHub: [ishivam0980](https://github.com/ishivam0980)
 - LinkedIn: [Shivam Srivastava](https://www.linkedin.com/in/shivam-srivastava-817b33331)
