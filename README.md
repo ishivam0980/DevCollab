@@ -8,7 +8,9 @@ DevCollab is a developer collaboration platform where developers can post projec
 
 **What problem it solves:** Finding collaborators with complementary skills is hard. DevCollab matches developers to projects based on their tech stack, experience level, and interests - eliminating the guesswork from team formation.
 
----
+## Live Demo
+
+**[View Deployed Application →](https://dev-collab-two.vercel.app/)**
 
 ## Features Included
 
