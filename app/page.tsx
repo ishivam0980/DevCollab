@@ -239,7 +239,7 @@ export default function HomePage() {
       </section>
 
       {/* ========== HOW IT WORKS SECTION ========== */}
-      <section id="how-it-works" className="relative z-10 py-24">
+      <section id="how-it-works" className="relative z-10 py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -256,7 +256,7 @@ export default function HomePage() {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-8 md:grid md:grid-cols-3 md:gap-8 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
             {[
               { title: 'Create Your Profile', desc: 'Showcase your skills, experience, and the projects you want to build', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z', color: 'purple' },
               { title: 'Post or Browse Projects', desc: 'Share your ideas or discover projects that match your expertise', icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z', color: 'blue' },
@@ -268,7 +268,7 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="glass-card rounded-3xl p-8 relative group hover:-translate-y-2 transition-transform duration-300"
+                className="glass-card rounded-3xl p-8 relative group hover:-translate-y-2 transition-transform duration-300 min-w-[85vw] md:min-w-0 snap-center"
               >
                 <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-full blur-2xl group-hover:blur-3xl transition-all" />
                 
@@ -289,7 +289,7 @@ export default function HomePage() {
       </section>
 
       {/* ========== FEATURES GRID ========== */}
-      <section id="features" className="relative z-10 py-24">
+      <section id="features" className="relative z-10 py-16 md:py-24">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/10 to-transparent pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <motion.div
@@ -307,7 +307,7 @@ export default function HomePage() {
             </p>
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-8 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-6 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
             {[
               { icon: '\uD83E\uDDE9', title: 'Smart Matching', desc: 'Advanced algorithm matches you with compatible developers based on skills and experience' },
               { icon: '\uD83D\uDD0D', title: 'Skill Discovery', desc: 'Find developers with the exact tech stack your project needs' },
@@ -322,7 +322,7 @@ export default function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="glass-panel rounded-2xl p-6 hover:bg-white/5 transition-all group cursor-default"
+                className="glass-panel rounded-2xl p-6 hover:bg-white/5 transition-all group cursor-default min-w-[85vw] sm:min-w-0 snap-center"
               >
                 <div className="flex items-center gap-4 mb-4">
                   <span className="text-3xl group-hover:scale-110 transition-transform duration-300">{feature.icon}</span>
@@ -368,7 +368,7 @@ export default function HomePage() {
       </section>
 
       {/* ========== FINAL CTA ========== */}
-      <section className="relative z-10 py-24">
+      <section className="relative z-10 py-16 md:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -434,7 +434,7 @@ export default function HomePage() {
             </div>
 
             {/* Resources Links */}
-            <div>
+            <div className="hidden md:block">
               <h4 className="text-white font-semibold mb-4">Resources</h4>
               <ul className="space-y-2">
                 <li><Link href="#" onClick={(e) => e.preventDefault()} className="text-slate-400 hover:text-purple-400 text-sm transition-colors cursor-not-allowed opacity-50">Documentation</Link></li>
@@ -445,7 +445,7 @@ export default function HomePage() {
             </div>
 
             {/* Legal Links */}
-            <div>
+            <div className="hidden md:block">
               <h4 className="text-white font-semibold mb-4">Legal</h4>
               <ul className="space-y-2">
                 <li><Link href="#" onClick={(e) => e.preventDefault()} className="text-slate-400 hover:text-purple-400 text-sm transition-colors cursor-not-allowed opacity-50">Privacy</Link></li>
@@ -459,9 +459,6 @@ export default function HomePage() {
           <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-slate-500 text-sm">
               © 2025 DevCollab. All rights reserved.
-            </p>
-            <p className="text-slate-500 text-sm flex items-center gap-1">
-              Made with <span className="text-red-500">❤️</span> for developers
             </p>
           </div>
         </div>
