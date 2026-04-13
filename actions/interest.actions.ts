@@ -4,18 +4,20 @@ import connectDB from "@/lib/mongodb";
 import Interest from "@/models/Interest";
 import Project from "@/models/Project";
 import User from "@/models/User";
-import { createNotification } from "./notification.actions";
+import Notification from "@/models/Notification";
+import mongoose from "mongoose";
 
 // ============================================
 // TOGGLE INTEREST (Show or Withdraw Interest)
 // ============================================
 /**
- * Toggles user's interest in a project.
+ * Toggles user's interest in a project using MongoDB Transactions.
  * - If already interested → removes interest
  * - If not interested → adds interest
  * Returns the new state (interested: true/false)
  */
 export const toggleInterest = async(projectId: string) => {
+    // 1. Initial Checks (No transaction needed yet)
     try {
         const currentUser = await getCurrentUser();
         if (!currentUser) {
@@ -24,61 +26,81 @@ export const toggleInterest = async(projectId: string) => {
         
         await connectDB();
         
-        // Get the user's MongoDB _id
         const user = await User.findOne({ email: currentUser.email });
         if (!user) {
             return { error: 'User not found' };
         }
         
-        // Check if project exists
         const project = await Project.findById(projectId);
         if (!project) {
             return { error: 'Project not found' };
         }
         
-        // Can't show interest in your own project
         if (project.owner.toString() === user._id.toString()) {
             return { error: 'Cannot show interest in your own project' };
         }
         
-        // Check if already interested
         const existingInterest = await Interest.findOne({
             user: user._id,
             project: projectId
         });
         
-        if (existingInterest) {
-            // Already interested → remove it
-            await Interest.findByIdAndDelete(existingInterest._id);
+        // 2. Start MongoDB Session for Transaction
+        const session = await mongoose.startSession();
+        
+        try {
+            session.startTransaction();
             
-            // Decrement the interest count on project
-            await Project.findByIdAndUpdate(projectId, {
-                $inc: { interestCount: -1 }
-            });
+            if (existingInterest) {
+                // WITHDRAW INTEREST FLOW
+                await Interest.findByIdAndDelete(existingInterest._id, { session });
+                
+                await Project.findByIdAndUpdate(projectId, {
+                    $inc: { interestCount: -1 }
+                }, { session });
+                
+                await session.commitTransaction();
+                return { success: true, interested: false };
+            } else {
+                // SHOW INTEREST FLOW
+                // Create Interest (Passing array and { session } is required for .create() in transactions)
+                await Interest.create(
+                    [{
+                        user: user._id,
+                        project: projectId
+                    }],
+                    { session }
+                );
+                
+                await Project.findByIdAndUpdate(projectId, {
+                    $inc: { interestCount: 1 }
+                }, { session });
+                
+                // Create Notification manually here to include it in the transaction
+                await Notification.create(
+                    [{
+                        recipient: project.owner,
+                        sender: user._id,
+                        type: 'interest',
+                        message: `${user.name} is interested in your project "${project.title}"`,
+                        project: projectId
+                    }],
+                    { session }
+                );
+                
+                await session.commitTransaction();
+                return { success: true, interested: true };
+            }
             
-            return { success: true, interested: false };
-        } else {
-            // Not interested → add it
-            await Interest.create({
-                user: user._id,
-                project: projectId
-            });
+        } catch (txnError) {
+            // If anything fails (Interest creation, Counter update, or Notification)
+            await session.abortTransaction();
+            console.error('Transaction aborted:', txnError);
+            return { error: 'Database transaction failed. Please try again.' };
             
-            // Increment the interest count on project
-            await Project.findByIdAndUpdate(projectId, {
-                $inc: { interestCount: 1 }
-            });
-            
-            // Send notification to project owner
-            await createNotification(
-                project.owner.toString(),
-                user._id.toString(),
-                'interest',
-                `${user.name} is interested in your project "${project.title}"`,
-                projectId
-            );
-            
-            return { success: true, interested: true };
+        } finally {
+            // Always end the session to prevent memory leaks
+            session.endSession();
         }
         
     } catch (error) {
