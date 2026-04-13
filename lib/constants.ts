@@ -18,8 +18,9 @@ export const TECH_SKILLS = [
   'React Native', 'Flutter', 'iOS', 'Android', 'Expo',
   
   // AI/ML
-  'TensorFlow', 'PyTorch', 'Machine Learning', 'Deep Learning', 'NLP', 'Computer Vision', 'OpenAI API', 'LangChain',
-  
+  'TensorFlow', 'PyTorch', 'Machine Learning', 'Deep Learning', 'NLP', 'Computer Vision', 'OpenAI API', 'LangChain', 
+  'Artificial Intelligence', 'AI', 'RAG', 'LLM', 'Generative AI', 
+
   // Other Technologies
   'GraphQL', 'REST APIs', 'WebSockets', 'Blockchain', 'Web3', 'Solidity', 'Unity', 'Unreal Engine',
   
