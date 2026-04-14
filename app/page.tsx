@@ -15,13 +15,6 @@ const floatingProfiles = [
   { name: 'Rohan', skills: ['Vue', 'TypeScript'], avatar: 'Rohan', rotation: 7, delay: 0.1 },
 ];
 
-// Stats data
-const stats = [
-  { value: '5K+', label: 'Active Developers' },
-  { value: '1,200+', label: 'Projects Created' },
-  { value: '85%', label: 'Match Success Rate' },
-];
-
 export default function HomePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -335,38 +328,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ========== STATS SECTION ========== */}
-      <section className="relative z-10 py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="relative overflow-hidden rounded-3xl p-8 md:p-12"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-900/40 via-blue-900/40 to-purple-900/40 backdrop-blur-xl border border-white/10" />
-            <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:30px_30px]" />
-            
-            <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-              {stats.map((stat, index) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <div className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent mb-2 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]">
-                    {stat.value}
-                  </div>
-                  <p className="text-slate-300 font-medium">{stat.label}</p>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
       {/* ========== FINAL CTA ========== */}
       <section className="relative z-10 py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
@@ -422,46 +383,21 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Product Links */}
+            {/* Quick Links */}
             <div>
-              <h4 className="text-white font-semibold mb-4">Product</h4>
+              <h4 className="text-white font-semibold mb-4">Quick Links</h4>
               <ul className="space-y-2">
-                <li><Link href="/browse" className="text-slate-400 hover:text-purple-400 text-sm transition-colors">Browse</Link></li>
-                <li><Link href="#features" className="text-slate-400 hover:text-purple-400 text-sm transition-colors">Features</Link></li>
-                <li><Link href="#" onClick={(e) => e.preventDefault()} className="text-slate-400 hover:text-purple-400 text-sm transition-colors cursor-not-allowed opacity-50">Pricing</Link></li>
-                <li><Link href="#" onClick={(e) => e.preventDefault()} className="text-slate-400 hover:text-purple-400 text-sm transition-colors cursor-not-allowed opacity-50">About</Link></li>
-              </ul>
-            </div>
-
-            {/* Resources Links */}
-            <div>
-              <h4 className="text-white font-semibold mb-4">Resources</h4>
-              <ul className="space-y-2">
-                <li><Link href="#" onClick={(e) => e.preventDefault()} className="text-slate-400 hover:text-purple-400 text-sm transition-colors cursor-not-allowed opacity-50">Documentation</Link></li>
-                <li><Link href="#" onClick={(e) => e.preventDefault()} className="text-slate-400 hover:text-purple-400 text-sm transition-colors cursor-not-allowed opacity-50">API</Link></li>
-                <li><Link href="#" onClick={(e) => e.preventDefault()} className="text-slate-400 hover:text-purple-400 text-sm transition-colors cursor-not-allowed opacity-50">Support</Link></li>
-                <li><Link href="#" onClick={(e) => e.preventDefault()} className="text-slate-400 hover:text-purple-400 text-sm transition-colors cursor-not-allowed opacity-50">Status</Link></li>
-              </ul>
-            </div>
-
-            {/* Legal Links */}
-            <div>
-              <h4 className="text-white font-semibold mb-4">Legal</h4>
-              <ul className="space-y-2">
-                <li><Link href="#" onClick={(e) => e.preventDefault()} className="text-slate-400 hover:text-purple-400 text-sm transition-colors cursor-not-allowed opacity-50">Privacy</Link></li>
-                <li><Link href="#" onClick={(e) => e.preventDefault()} className="text-slate-400 hover:text-purple-400 text-sm transition-colors cursor-not-allowed opacity-50">Terms</Link></li>
-                <li><Link href="#" onClick={(e) => e.preventDefault()} className="text-slate-400 hover:text-purple-400 text-sm transition-colors cursor-not-allowed opacity-50">Security</Link></li>
+                <li><Link href="/browse" className="text-slate-400 hover:text-purple-400 text-sm transition-colors">Browse Projects</Link></li>
+                <li><Link href="/sign-in" className="text-slate-400 hover:text-purple-400 text-sm transition-colors">Sign In</Link></li>
+                <li><Link href="/sign-up" className="text-slate-400 hover:text-purple-400 text-sm transition-colors">Create Account</Link></li>
               </ul>
             </div>
           </div>
 
           {/* Bottom bar */}
-          <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="border-t border-white/5 pt-8 flex justify-center items-center">
             <p className="text-slate-500 text-sm">
-              © 2025 DevCollab. All rights reserved.
-            </p>
-            <p className="text-slate-500 text-sm flex items-center gap-1">
-              Made with <span className="text-red-500">❤️</span> for developers
+              © {new Date().getFullYear()} DevCollab. All rights reserved.
             </p>
           </div>
         </div>
