@@ -123,7 +123,7 @@ function SignUpForm() {
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="John Doe"
+                placeholder="Shivam Srivastava"
                 className="w-full bg-slate-900/50 border border-white/10 text-white text-sm rounded-xl pl-10 pr-4 py-2 focus:outline-none focus:border-white/30 placeholder:text-slate-600 transition-all"
               />
             </div>
