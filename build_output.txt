@@ -1,0 +1,44 @@
+
+> devcollab@0.1.0 build
+> next build
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+   ▲ Next.js 16.0.7 (Turbopack)
+   - Environments: .env.local
+   - Experiments (use with caution):
+     ✓ turbopackFileSystemCacheForDev
+
+ ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+   Creating an optimized production build ...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ ✓ Compiled successfully in 99s
+   Running TypeScript ...
+Failed to compile.
+
+./app/page.tsx:175:27
+Type error: Type '{ hidden: { opacity: number; y: number; }; visible: (i?: number) => { opacity: number; y: number; transition: { delay: number; duration: number; ease: number[]; }; }; }' is not assignable to type 'Variants'.
+  Property 'visible' is incompatible with index signature.
+    Type '(i?: number) => { opacity: number; y: number; transition: { delay: number; duration: number; ease: number[]; }; }' is not assignable to type 'Variant'.
+      Type '(i?: number) => { opacity: number; y: number; transition: { delay: number; duration: number; ease: number[]; }; }' is not assignable to type 'TargetResolver'.
+        Type '{ opacity: number; y: number; transition: { delay: number; duration: number; ease: number[]; }; }' is not assignable to type 'string | TargetAndTransition'.
+          Type '{ opacity: number; y: number; transition: { delay: number; duration: number; ease: number[]; }; }' is not assignable to type 'TargetAndTransition'.
+            Type '{ opacity: number; y: number; transition: { delay: number; duration: number; ease: number[]; }; }' is not assignable to type '{ transition?: Transition<any> | undefined; transitionEnd?: ResolvedValues | undefined; }'.
+              Types of property 'transition' are incompatible.
+                Type '{ delay: number; duration: number; ease: number[]; }' is not assignable to type 'Transition<any> | undefined'.
+                  Type '{ delay: number; duration: number; ease: number[]; }' is not assignable to type 'TransitionWithValueOverrides<any>'.
+                    Type '{ delay: number; duration: number; ease: number[]; }' is not assignable to type 'ValueAnimationTransition<any>'.
+                      Types of property 'ease' are incompatible.
+                        Type 'number[]' is not assignable to type 'Easing | Easing[] | undefined'.
+                          Type 'number[]' is not assignable to type 'EasingFunction | Easing[]'.
+                            Type 'number[]' is not assignable to type 'Easing[]'.
+                              Type 'number' is not assignable to type 'Easing'.
+
+[0m [90m 173 |[39m           [33m<[39m[33mdiv[39m className[33m=[39m[32m"grid lg:grid-cols-5 gap-10 lg:gap-16 items-center"[39m[33m>[39m
+ [90m 174 |[39m             [33m<[39m[33mmotion[39m[33m.[39mdiv initial[33m=[39m[32m"hidden"[39m animate[33m=[39m[32m"visible"[39m variants[33m=[39m{stagger} className[33m=[39m[32m"lg:col-span-3 text-center lg:text-left"[39m[33m>[39m
+[31m[1m>[22m[39m[90m 175 |[39m               [33m<[39m[33mmotion[39m[33m.[39mdiv variants[33m=[39m{fadeUp} custom[33m=[39m{[35m0[39m}[33m>[39m
+ [90m     |[39m                           [31m[1m^[22m[39m
+ [90m 176 |[39m                 [33m<[39m[33mspan[39m className[33m=[39m[32m"inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs sm:text-sm font-semibold mb-5 sm:mb-7"[39m[33m>[39m
+ [90m 177 |[39m                   [33m<[39m[33mspan[39m className[33m=[39m[32m"relative flex h-2 w-2"[39m[33m>[39m[33m<[39m[33mspan[39m className[33m=[39m[32m"animate-ping absolute h-full w-full rounded-full bg-cyan-400 opacity-75"[39m[35m/><span className="relative rounded-full h-2 w-2 bg-cyan-500"/[39m[33m>[39m[33m<[39m[33m/[39m[33mspan[39m[33m>[39m
+ [90m 178 |[39m                   [33mEarly[39m [33mAccess[39m — [33mFree[39m [33mForever[39m[0m
+Next.js build worker exited with code: 1 and signal: null
